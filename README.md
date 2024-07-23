@@ -1,5 +1,5 @@
 # ESPHomeConfig
-Configurations for my ESPHome converted Gosund and Magic Home smart home devices.<br><br>
+Configurations for my ESPHome converted Gosund and Magic Home Wifi smart home devices.<br><br>
 Includes:
 * Docker compose setup for running the ESPHome CLI.
 * ESPHome YAML configuration for the Magic Home Wifi ESP-IR-B-v2.3 RGB LED Controller with some custom lighting effects.
