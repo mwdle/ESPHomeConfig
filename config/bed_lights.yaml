@@ -1,0 +1,9 @@
+<<: !include magichome_ledstrip_common.yaml
+
+substitutions:
+  device_name: mh2
+  device_description: Magic Home Wifi ZJ-WFMN-A V1.1 LED Controller
+  friendly_name: Bed Lights
+  ip_address: 192.168.0.104
+  gateway: 192.168.0.1
+  subnet: 255.255.255.0

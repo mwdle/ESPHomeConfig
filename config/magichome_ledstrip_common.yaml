@@ -1,17 +1,19 @@
+# See the README instructions for using this common configuration.
 esphome:
   name: ${device_name}
   comment: ${device_description}
 
 esp8266:
   board: esp01_1m
+  restore_from_flash: true
 
 wifi:
   ssid: !secret wifissid
   password: !secret wifipass
   manual_ip:
     static_ip: ${ip_address}
-    gateway: 192.168.0.1
-    subnet: 255.255.255.0
+    gateway: ${gateway}
+    subnet: ${subnet}
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
@@ -37,6 +39,7 @@ ota:
 
 # Enable web server
 web_server:
+  version: 3
   port: 80
   auth:
     username: !secret otauser
@@ -698,57 +701,72 @@ binary_sensor:
             blue: 100%
             effect: None
 
+globals:
+  - id: hue
+    type: int
+    initial_value: "0"
+
 light:
   - platform: rgb
-    name: ${friendly_name} # Put the name that you want to see in Home Assistant.
+    name: ${friendly_name}
     id: ${device_name}
+    restore_mode: RESTORE_DEFAULT_OFF
     red: red_channel
     green: green_channel
     blue: blue_channel
+    on_turn_off:
+      then:
+        - lambda: 'id(hue) = 0;'
     effects:
       - lambda:
-          name: Color loop
+          name: Color Loop
           update_interval: 100ms
           lambda: |-
-            static int hue = 0;
-            hue += 1;
-            if (hue >= 360) {
-              hue = 0;
+            id(hue) += 1;
+            if (id(hue) >= 360) {
+              id(hue) = 0;
             }
             float r, g, b;
-            hsv_to_rgb(hue, 1.0, 1.0, r, g, b);
+            hsv_to_rgb(id(hue), 1.0, 1.0, r, g, b);
             auto call = id(${device_name}).turn_on();
             call.set_transition_length(130);
             call.set_rgb(r,g,b);
             call.perform();
-      - lambda:
-          name: Seizure strobe
-          update_interval: 10ms
-          lambda: |-
-            static int state = 0;
-            auto call = id(${device_name}).turn_on();
-            call.set_transition_length(30);
-            if (state == 0) {
-              call.set_rgb(0.0, 0.0, 0.0);
-            } else if (state == 1) {
-              call.set_rgb(1.0, 0.0, 0.0);
-            } else if (state == 2) {
-              call.set_rgb(0.0, 1.0, 0.0);
-            } else if (state == 3) {
-              call.set_rgb(0.0, 0.0, 1.0);
-            } else if (state == 4) {
-              call.set_rgb(1.0, 1.0, 0.0);
-            } else if (state == 5) {
-              call.set_rgb(0.0, 1.0, 1.0);
-            } else if (state == 6) {
-              call.set_rgb(1.0, 0.0, 1.0);
-            } else if (state == 7) {
-              call.set_rgb(1.0, 1.0, 1.0);
-            }
-            call.perform();
-            state += 1;
-            if (state == 8)
-              state = 0;
+      - strobe:
+          name: "Multicolor Strobe"
+          colors:
+            - state: True
+              brightness: 100%
+              red: 100%
+              green: 100%
+              blue: 100%
+              duration: 5ms
+            - state: False
+              duration: 95ms
+            - state: True
+              brightness: 100%
+              red: 100%
+              green: 0%
+              blue: 0%
+              duration: 5ms
+            - state: False
+              duration: 95ms
+            - state: True
+              brightness: 100%
+              red: 0%
+              green: 100%
+              blue: 0%
+              duration: 5ms
+            - state: False
+              duration: 95ms
+            - state: True
+              brightness: 100%
+              red: 0%
+              green: 0%
+              blue: 100%
+              duration: 5ms
+            - state: False
+              duration: 95ms
 
 sensor:
   - platform: wifi_signal
@@ -764,3 +782,7 @@ text_sensor:
   - platform: version
     name: "${friendly_name} ESPHome Version"
     id: "${device_name}_esphome_version"
+
+button:
+  - platform: restart
+    name: "Restart ${friendly_name}"
