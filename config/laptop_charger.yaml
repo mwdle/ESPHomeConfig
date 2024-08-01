@@ -1,0 +1,9 @@
+<<: !include sonoff_plug_common.yaml
+
+substitutions:
+  device_name: sf2
+  device_description: Sonoff S31 Plug | Laptop Charging Control
+  friendly_name: Laptop Charger
+  ip_address: 192.168.0.106
+  gateway: 192.168.0.1
+  subnet: 255.255.255.0

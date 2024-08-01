@@ -63,6 +63,7 @@ output:
 binary_sensor:
   - platform: remote_receiver
     name: "Remote ON"
+    icon: mdi:camera-control
     raw:
       code:
         [
@@ -140,6 +141,7 @@ binary_sensor:
 
   - platform: remote_receiver
     name: "Remote OFF"
+    icon: mdi:camera-control
     raw:
       code:
         [
@@ -217,6 +219,7 @@ binary_sensor:
 
   - platform: remote_receiver
     name: "Remote BRIGHTUP"
+    icon: mdi:camera-control
     raw:
       code:
         [
@@ -296,6 +299,7 @@ binary_sensor:
 
   - platform: remote_receiver
     name: "Remote BRIGHTDOWN"
+    icon: mdi:camera-control
     raw:
       code:
         [
@@ -375,6 +379,7 @@ binary_sensor:
 
   - platform: remote_receiver
     name: "Remote RED"
+    icon: mdi:camera-control
     raw:
       code:
         [
@@ -457,6 +462,7 @@ binary_sensor:
 
   - platform: remote_receiver
     name: "Remote GREEN"
+    icon: mdi:camera-control
     raw:
       code:
         [
@@ -539,6 +545,7 @@ binary_sensor:
 
   - platform: remote_receiver
     name: "Remote BLUE"
+    icon: mdi:camera-control
     raw:
       code:
         [
@@ -621,6 +628,7 @@ binary_sensor:
 
   - platform: remote_receiver
     name: "Remote WHITE"
+    icon: mdi:camera-control
     raw:
       code:
         [
@@ -773,16 +781,30 @@ sensor:
     name: "${friendly_name} WiFi signal"
     id: "${device_name}_wifi_signal"
     update_interval: 60s
+    icon: mdi:broadcast
   - platform: uptime
     name: "${friendly_name} Uptime"
     id: "${device_name}_uptime"
     update_interval: 60s
+    icon: mdi:timer-outline
 
 text_sensor:
   - platform: version
     name: "${friendly_name} ESPHome Version"
     id: "${device_name}_esphome_version"
+    icon: mdi:numeric
+  - platform: wifi_info
+    ip_address:
+      name: ${friendly_name} IP Address
+      icon: mdi:ip-network
+    ssid:
+      name: ${friendly_name} Connected SSID
+      icon: mdi:wifi-star
+    mac_address:
+      name: ${friendly_name} Mac Wifi Address
+      icon: mdi:router-network-wireless
 
 button:
   - platform: restart
     name: "Restart ${friendly_name}"
+    icon: mdi:restart

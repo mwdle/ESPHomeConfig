@@ -1,9 +1,9 @@
-<<: !include gosund_plug_common.yaml
+<<: !include sonoff_plug_common.yaml
 
 substitutions:
-  device_name: gosund
-  device_description: Gosund WP3 Plug
+  device_name: sf1
+  device_description: Sonoff S31 Plug | Stereo and Speakers Power Control
   friendly_name: Speakers
-  ip_address: 192.168.0.102
+  ip_address: 192.168.0.105
   gateway: 192.168.0.1
   subnet: 255.255.255.0

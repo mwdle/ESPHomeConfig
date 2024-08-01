@@ -2,7 +2,7 @@
 
 substitutions:
   device_name: mh1
-  device_description: Magic Home Wifi ESP-IR-B-v2.3 LED Controller
+  device_description: Magic Home Wifi ESP-IR-B-v2.3 | LED Controller
   friendly_name: Shelf Lights
   ip_address: 192.168.0.103
   gateway: 192.168.0.1
