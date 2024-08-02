@@ -7,6 +7,6 @@ services:
       - 8266:8266
     volumes:
       - ${PWD}/config:/config
-      - ${DOCKER_VOLUMES}/ESPHome/build/.esphome:/config/.esphome # Put build directory outside of the project folder.
+      - ${DOCKER_VOLUMES}/ESPHome/.esphome:/config/.esphome # Put build directory outside of the project folder.
       - /etc/localtime:/etc/localtime:ro
     restart: no
