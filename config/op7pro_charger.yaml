@@ -1,9 +1,0 @@
-<<: !include gosund_plug_common.yaml
-
-substitutions:
-  device_name: gosund
-  device_description: Gosund WP3 Plug | Smartphone IP Camera Charging Control
-  friendly_name: OP7Pro Charger
-  ip_address: 192.168.0.102
-  gateway: 192.168.0.1
-  subnet: 255.255.255.0
