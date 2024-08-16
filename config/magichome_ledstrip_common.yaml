@@ -2,9 +2,6 @@
 esphome:
   name: ${device_name}
   comment: ${device_description}
-  on_boot:
-    then:
-      - lambda: 'id(hue) = 0;'
 
 esp8266:
   board: esp01_1m
@@ -25,9 +22,9 @@ wifi:
 
 captive_portal:
 
-# Enable logging
-logger:
-  baud_rate: 0 #disable UART logging
+# Disable logging because it causes crashes due to excessive logging when some custom light effects are enabled.
+# logger:
+#   baud_rate: 0 #disable UART logging
 
 # Enable Home Assistant API
 api:
@@ -792,6 +789,15 @@ sensor:
     id: "${device_name}_uptime"
     update_interval: 60s
     icon: mdi:timer-outline
+    # Sensor for light effect synchronization using Home Assistant automations.
+  - platform: template
+    name: ${friendly_name} Color Loop Hue
+    id: ${device_name}_color_loop_hue
+    update_interval: 2s
+    unit_of_measurement: ""
+    icon: "mdi:palette"
+    accuracy_decimals: 0
+    lambda: 'return id(hue);'
 
 text_sensor:
   - platform: version
@@ -813,3 +819,19 @@ button:
   - platform: restart
     name: "Restart ${friendly_name}"
     icon: mdi:restart
+    # Button that enables light effect synchronization using Home Assistant automations.
+  - platform: template
+    name: Decrement ${friendly_name} Color Loop Hue
+    id: ${device_name}_decrement_hue
+    icon: "mdi:led-strip-variant"
+    on_press:
+      then:
+        - lambda: 'id(hue) = (id(hue) - 1 < 0) ? 359 : id(hue) - 1;'
+    # Button that enables light effect synchronization using Home Assistant automations.
+  - platform: template
+    name: Increment ${friendly_name} Color Loop Hue
+    id: ${device_name}_increment_hue
+    icon: "mdi:led-strip-variant"
+    on_press:
+      then:
+        - lambda: 'id(hue) = (id(hue) + 1 >= 360) ? 0 : id(hue) + 1;'
