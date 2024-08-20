@@ -86,7 +86,7 @@ status_led:
 output:
   - platform: gpio
     pin: GPIO13
-    inverted: true
+    inverted: false # Not inverted (light will be off when device is on).
     id: led
 
 sensor:
