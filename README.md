@@ -14,10 +14,10 @@ Configurations and flashing instructions for my ESPHome converted Gosund, Sonoff
 ## Included In This Repository
 
 * Docker Compose configuration for ESPHome CLI  
-* ESPHome YAML configuration for the ```Magic Home ESP-IR-B-v2.3``` RGB LED strip controller with some custom lighting effects.  
-* ESPHome YAML configuration for the ```Magic Home ZJ-WFMN-A V1.1``` RGB LED strip controller with some custom lighting effects.  
-* ESPHome YAML configuration for the ```Gosund WP3 (ESP8285)``` Smart Plug  
-* ESPHome YAML configuration for the ```Sonoff S31``` Smart Plug  
+* ESPHome YAML configuration for the `Magic Home ESP-IR-B-v2.3` RGB LED strip controller with some custom lighting effects.  
+* ESPHome YAML configuration for the `Magic Home ZJ-WFMN-A V1.1` RGB LED strip controller with some custom lighting effects.  
+* ESPHome YAML configuration for the `Gosund WP3 (ESP8285)` Smart Plug  
+* ESPHome YAML configuration for the `Sonoff S31` Smart Plug  
 * Instructions (with photos) on flashing custom firmware to the aforementioned devices  
 
 ## Getting Started  
@@ -36,7 +36,7 @@ Configurations and flashing instructions for my ESPHome converted Gosund, Sonoff
     │   └── .esphome/
     ```  
 
-3. Change the ```.env``` file properties for your configuration:  
+3. Change the `.env` file properties for your configuration:  
 
     ```properties
     DOCKER_VOLUMES=<PATH_TO_DOCKER_VOLUMES_FOLDER> # The folder created in the previous step.
@@ -60,7 +60,7 @@ Configurations and flashing instructions for my ESPHome converted Gosund, Sonoff
     docker compose up -d
     ```  
 
-Your container should be up and running and you should be able to execute ESPHome commands via ```docker exec```.  
+Your container should be up and running and you should be able to execute ESPHome commands via `docker exec`.  
 
 ## Flashing Instructions  
 
