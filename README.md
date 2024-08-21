@@ -63,7 +63,7 @@ Configurations and flashing instructions for my ESPHome converted Gosund, Sonoff
 Your container should be up and running and you should be able to execute ESPHome commands via `docker exec` like so:
 
 ```shell
-docker exec -it esphome esphome run config.yaml
+docker exec -it esphome esphome run YOUR_CONFIG.yaml
 ```
 
 ## Flashing Instructions  
