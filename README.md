@@ -7,7 +7,7 @@ Configurations and flashing instructions for my ESPHome converted Gosund, Sonoff
 * [Description](#esphome-configurations-and-flashing-instructions)  
 * [Included In This Repository](#included-in-this-repository)  
 * [Getting Started](#getting-started)  
-* [Flashing Instructions](#flashing-instructions)
+* [Flashing Instructions](#flashing-instructions-coming-soon)
 * [License](#license)  
 * [Disclaimer](#disclaimer)  
 
@@ -62,7 +62,7 @@ Configurations and flashing instructions for my ESPHome converted Gosund, Sonoff
 
 Your container should be up and running and you should be able to execute ESPHome commands via `docker exec`.  
 
-## Flashing Instructions  
+## Flashing Instructions (coming soon)  
 
 ### Magic Home ESP-IR-B-v2.3 RGB LED Strip Controller  
 
