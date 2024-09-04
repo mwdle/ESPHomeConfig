@@ -45,6 +45,10 @@ web_server:
     username: !secret otauser
     password: !secret otapass
 
+time:
+  - platform: homeassistant
+    id: esptime
+
 binary_sensor:
   - platform: gpio
     pin:

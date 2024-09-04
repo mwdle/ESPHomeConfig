@@ -41,6 +41,10 @@ web_server:
     username: !secret otauser
     password: !secret otapass
 
+time:
+  - platform: homeassistant
+    id: esptime
+
 logger:
   baud_rate: 0 # (UART logging interferes with cse7766)
   logs:

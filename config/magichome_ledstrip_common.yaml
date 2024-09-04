@@ -45,6 +45,10 @@ web_server:
     username: !secret otauser
     password: !secret otapass
 
+time:
+  - platform: homeassistant
+    id: esptime
+
 remote_receiver:
   pin: GPIO4
 #  dump: raw #Comment out if you aren't debugging IR codes

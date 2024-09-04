@@ -1,0 +1,302 @@
+substitutions:
+  device_name: emr
+  device_description: ESP8266 Music Remote
+  friendly_name: Music Remote
+  ip_address: 192.168.0.107
+  gateway: 192.168.0.1
+  subnet: 255.255.255.0
+
+esphome:
+  name: ${device_name}
+  comment: ${device_description}
+
+esp8266:
+  board: nodemcuv2
+  framework:
+    version: recommended
+
+wifi:
+  ssid: !secret wifissid
+  password: !secret wifipass
+  manual_ip:
+    static_ip: ${ip_address}
+    gateway: ${gateway}
+    subnet: ${subnet}
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "${friendly_name} Fallback Hotspot"
+    password: !secret fallbackpass
+
+captive_portal:
+
+# Enable logging
+# logger:
+#   baud_rate: 0
+#   level: DEBUG
+#   logs:
+#     component: ERROR
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret encryption_key
+
+# Enable OTA updates
+ota:
+  - platform: esphome
+    id: my_ota
+    password: !secret otapass
+
+font:
+  - file: "fonts/OpenSans-Regular.ttf" # https://fonts.google.com/specimen/Open+Sans
+    id: opensans
+    size: 12
+    glyphs:
+      "'&@!,.?\"%()+-_:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz|/"
+
+  - file: "fonts/MaterialDesignIconsDesktop.ttf" # https://github.com/Templarian/MaterialDesign-Font
+    id: mdi
+    size: 18
+    glyphs: [
+      '󰕾', # volume-high
+      '󰏤', # pause
+      '󰐊', # play
+      '󰤟', # wifi-strength-1
+      '󰤢', # wifi-strength-2
+      '󰤥', # wifi-strength-3
+      '󰤨', # wifi-strength-4
+      '󰄘', # cast
+      '󰄙', # cast-connected
+      '󰃟', # brightness-6
+      '󰍺', # monitor-multiple
+      '󰒮', # skip-previous
+      '󰐎', # play-pause
+      '󰒭', # skip-next
+      '󰓦' # sync
+    ]
+
+i2c:
+  sda: D6
+  scl: D7
+
+time:
+  - platform: homeassistant
+    id: esptime
+
+# Balance/reduce OLED burn-in by inverting the display colors each minute
+interval:
+  - interval: 1min
+    then:
+      - lambda: |-
+          static bool inverted = false;
+          inverted = !inverted;
+          id(screen).set_invert(inverted);
+
+display:
+  - platform: ssd1306_i2c
+    id: screen
+    model: "SSD1306 128x64"
+    address: 0x3C
+    rotation: 180°
+    pages:
+      - id: playbackPage
+        lambda: |-
+          // Draw Page Header:
+          it.print(55, 5, id(opensans), TextAlign::CENTER, "Now Playing");
+          if (id(media_status).state == "playing") it.print(101, 6, id(mdi), TextAlign::CENTER, "󰐊"); // Play Icon
+          else it.print(101, 7, id(mdi), TextAlign::CENTER, "󰏤"); // Pause Icon
+          it.line(0, 14, 128, 14); // Horizontal line 
+
+          // Draw Media Title Info:
+          static int title_scroll_pos = 0;
+          int title_width;
+          static int x_offset, baseline, height;
+          id(opensans)->measure(id(media_title).state.c_str(), &title_width, &x_offset, &baseline, &height);
+          if (title_width >= 128) {
+            it.print(title_scroll_pos, 20, id(opensans), id(media_title).state.c_str());
+            if (title_scroll_pos + title_width < 0) {
+              title_scroll_pos = 128;
+            }
+            title_scroll_pos -= 24;
+          } else it.print(64, 26, id(opensans), TextAlign::CENTER, id(media_title).state.c_str());
+
+          // Draw Media Artist Info:
+          static int artist_scroll_pos = 0;
+          int artist_width;
+          id(opensans)->measure(id(media_artist).state.c_str(), &artist_width, &x_offset, &baseline, &height);
+          if (artist_width >= 128) {
+            it.print(artist_scroll_pos, 32, id(opensans), id(media_artist).state.c_str());
+            if (artist_scroll_pos + artist_width < 0) {
+              artist_scroll_pos = 128;
+            }
+            artist_scroll_pos -= 24;
+          } else it.print(64, 38, id(opensans), TextAlign::CENTER, id(media_artist).state.c_str());
+
+          // Draw Volume Bar:
+          it.print(-1, 49, id(mdi), COLOR_ON, "󰕾", COLOR_OFF); // Print volume-high icon
+          it.rectangle(18, 52, 108, 10); // Volume bar outline
+          int bar_width = int(id(media_volume).state * 107);
+          it.filled_rectangle(19, 53, bar_width, 8); // Volume bar fill
+      - id: statsPage
+        lambda: |-
+          if (id(${device_name}_wifi_signal).state < -75) it.print(0, -2, id(mdi), "󰤟"); // wifi-strength-1
+          else if (id(${device_name}_wifi_signal).state < -50) it.print(0, -2, id(mdi), "󰤢"); // wifi-strength-2
+          else if (id(${device_name}_wifi_signal).state < -25) it.print(0, -2, id(mdi), "󰤥"); // wifi-strength-3
+          else  it.print(0, -2, id(mdi), "󰤨"); // wifi-strength-4
+          it.printf(22, -1, id(opensans), "%.0f%%", id(${device_name}_wifi_signal).state);
+          if (global_api_server->is_connected()) it.print(0, 12, id(mdi), "󰄙"); // cast-connected icon
+          else it.print(0, 12, id(mdi), "󰄘"); // cast icon
+          it.print(22, 12, id(opensans), global_api_server->is_connected() ? "Connected" : "Disconnected");
+          it.print(0, 28, id(mdi), "󰃟"); // brightness-6 icon
+          it.printf(22, 28, id(opensans), "%.2f%%", id(pot).state);
+          it.line(0, 45, 128, 45); // Horizontal line
+          it.print(3, 46, id(mdi), "󰍺"); // monitor-multiple icon
+          it.print(30, 46, id(mdi), "󰒮"); // skip-previous icon
+          it.print(56, 46, id(mdi), "󰐎"); // play-pause icon
+          it.print(82, 46, id(mdi), "󰒭"); // skip-next icon
+          it.print(109, 47, id(mdi), "󰓦"); // sync icon
+
+binary_sensor:
+  - platform: gpio
+    internal: true
+    pin:
+      number: D3
+      mode: INPUT_PULLUP
+      inverted: True
+    id: next_page_button
+    on_press:
+      - display.page.show_next: screen
+  - platform: gpio
+    internal: true
+    pin:
+      number: D0
+      mode: INPUT
+    id: media_previous_track
+    on_press:
+      - homeassistant.service:
+          service: media_player.media_previous_track
+          data:
+            entity_id: media_player.audio
+  - platform: gpio
+    internal: true
+    pin:
+      number: D4
+      mode: INPUT_PULLUP
+      inverted: True
+    id: media_play_pause
+    on_press:
+      - homeassistant.service:
+          service: media_player.media_play_pause
+          data:
+            entity_id: media_player.audio
+  - platform: gpio
+    internal: true
+    pin:
+      number: D5
+      mode: INPUT_PULLUP
+      inverted: True
+    id: media_next_track
+    on_press:
+      - homeassistant.service:
+          service: media_player.media_next_track
+          data:
+            entity_id: media_player.audio
+  - platform: gpio
+    internal: true
+    pin:
+      number: D8
+      mode: INPUT
+      inverted: True
+    id: media_volume_sync
+    on_press:
+      - homeassistant.service:
+          service: script.sync_audio_group_volume
+
+button:
+  - platform: restart
+    name: "Restart ${friendly_name}"
+    icon: mdi:restart
+
+sensor:
+  - platform: adc
+    id: pot
+    pin: A0
+    name: "Brightness Sensor"
+    update_interval: 5s
+    on_value:
+      then:
+        - lambda: |-
+            id(screen).set_contrast(round(x * 100.0) / 100.0); // Adjust display brightness based on photoresistor sensor value.
+    internal: true
+  - platform: rotary_encoder
+    name: "Volume"
+    id: volume
+    pin_a:
+      number: D2
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    pin_b:
+      number: D1
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    on_clockwise:
+      - homeassistant.service:
+          service: media_player.volume_up
+          data:
+            entity_id: media_player.audio
+    on_anticlockwise:
+      - homeassistant.service:
+          service: media_player.volume_down
+          data:
+            entity_id: media_player.audio
+    filters:
+      - debounce: 80ms
+    internal: true
+  - platform: wifi_signal
+    name: "${friendly_name} WiFi signal"
+    id: "${device_name}_wifi_signal"
+    update_interval: 60s
+    icon: mdi:broadcast
+    filters:
+    - filter_out: 31
+  - platform: homeassistant
+    id: media_volume
+    entity_id: media_player.audio_direct
+    attribute: volume_level
+    unit_of_measurement: "%"
+    internal: true
+
+text_sensor:
+  - platform: version
+    name: "${friendly_name} ESPHome Version"
+    id: "${device_name}_esphome_version"
+    icon: mdi:numeric
+  - platform: wifi_info
+    ip_address:
+      name: ${friendly_name} IP Address
+      icon: mdi:ip-network
+    ssid:
+      name: ${friendly_name} Connected SSID
+      icon: mdi:wifi-star
+    mac_address:
+      name: ${friendly_name} Mac Wifi Address
+      icon: mdi:router-network-wireless
+  - platform: homeassistant
+    id: media_title
+    entity_id: media_player.audio_direct
+    attribute: media_title
+    internal: true
+  - platform: homeassistant
+    id: media_artist
+    entity_id: media_player.audio_direct
+    attribute: media_artist
+    internal: true
+  - platform: homeassistant
+    id: media_status
+    entity_id: media_player.audio_direct
+    internal: true
