@@ -19,7 +19,7 @@ wifi:
   ssid: !secret wifissid
   password: !secret wifipass
   power_save_mode: none # Ensure the device remains connected and active so it can always have the correct state. Supposedly this option also helps with preventing unexpected resets on ESP8266 devices.
-  fast_connect: true # Don't do a full scan, just connect to first match.
+  fast_connect: true # Don't do a full scan, connect immediately.
   manual_ip:
     static_ip: ${ip_address}
     gateway: ${gateway}
@@ -63,15 +63,13 @@ font:
     id: opensans
     size: 12
     glyphs:
-      "'&@!,.?\"%()+-_:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz|/"
+      "'’&@!,.?\"%()[]+-=`~#*_:°•0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz|/àáãôçñ"
 
   - file: "fonts/MaterialDesignIcons.ttf" # https://github.com/Templarian/MaterialDesign-Webfont/blob/master/fonts/materialdesignicons-webfont.ttf
-    id: mdi
-    size: 18
+    id: mdi_16
+    size: 16
     glyphs: [
       '󰕾', # volume-high
-      '󰏤', # pause
-      '󰐊', # play
       '󰤟', # wifi-strength-1
       '󰤢', # wifi-strength-2
       '󰤥', # wifi-strength-3
@@ -80,8 +78,15 @@ font:
       '󰄙', # cast-connected
       '󰃟', # brightness-6
       '󰍺', # monitor-multiple
+    ]
+
+  - file: "fonts/MaterialDesignIcons.ttf" # https://github.com/Templarian/MaterialDesign-Webfont/blob/master/fonts/materialdesignicons-webfont.ttf
+    id: mdi_18
+    size: 18
+    glyphs: [
+      '󰏤', # pause
+      '󰐊', # play
       '󰒮', # skip-previous
-      '󰐎', # play-pause
       '󰒭', # skip-next
       '󱬐', # volume-equal
     ]
@@ -89,8 +94,8 @@ font:
 i2c:
   sda: D6
   scl: D7
-  scan: True
-  frequency: 100kHz
+  scan: true
+  frequency: 400kHz # This might help prevent blocking delays and unexpected resets caused by display components. Commenting this out results in no wifi connection.
 
 time:
   - platform: homeassistant
@@ -105,79 +110,99 @@ interval:
           inverted = !inverted;
           id(screen).set_invert(inverted);
 
+# Script to draw physical button icon representations on the display
+script:
+  id: render_ui_controls
+  then:
+    - lambda: |-
+        id(screen).line(0, 47, 127, 47); // Horizontal line
+        id(screen).print(13, 57, id(mdi_16), TextAlign::CENTER, "󰍺"); // monitor-multiple icon
+        id(screen).print(41, 56, id(mdi_18), TextAlign::CENTER, "󰒮"); // skip-previous icon
+        if (id(media_status).state == "playing" || id(media_status).state == "buffering") id(screen).print(67, 56, id(mdi_18), TextAlign::CENTER, "󰏤"); // pause icon
+        else id(screen).print(65, 56, id(mdi_18), TextAlign::CENTER, "󰐊"); // play icon
+        id(screen).print(91, 56, id(mdi_18), TextAlign::CENTER, "󰒭"); // skip-next icon
+        id(screen).print(117, 56, id(mdi_18), TextAlign::CENTER, "󱬐"); // volume-equal icon
+
 display:
   - platform: ssd1306_i2c
     id: screen
     model: "SSD1306 128x64"
     address: 0x3C
     rotation: 180°
+    contrast: 0% # Use the lowest brightness to save battery life
     pages:
       - id: playbackPage
         lambda: |-
-          // Draw Page Header:
-          it.print(55, 5, id(opensans), TextAlign::CENTER, "Now Playing");
-          if (id(media_status).state == "playing") it.print(101, 6, id(mdi), TextAlign::CENTER, "󰐊"); // Play Icon
-          else it.print(101, 7, id(mdi), TextAlign::CENTER, "󰏤"); // Pause Icon
-          it.line(0, 14, 128, 14); // Horizontal line 
+          const char* title = id(media_title).state.c_str();
+          const char* artist = id(media_artist).state.c_str();
 
-          // Draw Media Title Info:
-          static int title_scroll_pos = 0;
-          int title_width = 0, ignored1, ignored2, ignored3;
-          id(opensans)->measure(id(media_title).state.c_str(), &title_width, &ignored1, &ignored2, &ignored3);
-          if (title_width >= 128) {
-            it.print(title_scroll_pos, 20, id(opensans), id(media_title).state.c_str());
-            if (title_scroll_pos + title_width < 0) {
-              title_scroll_pos = 128;
-            }
-            title_scroll_pos -= 24;
-          } else it.print(64, 26, id(opensans), TextAlign::CENTER, id(media_title).state.c_str());
+          static int title_scroll_pos = 64, wrapped_title_scroll_pos = 140;
+          static int artist_scroll_pos = 64, wrapped_artist_scroll_pos = 140;
 
-          // Draw Media Artist Info:
-          static int artist_scroll_pos = 0;
-          int artist_width = 0;
-          id(opensans)->measure(id(media_artist).state.c_str(), &artist_width, &ignored1, &ignored2, &ignored3);
-          if (artist_width >= 128) {
-            it.print(artist_scroll_pos, 32, id(opensans), id(media_artist).state.c_str());
-            if (artist_scroll_pos + artist_width < 0) {
-              artist_scroll_pos = 128;
-            }
-            artist_scroll_pos -= 24;
-          } else it.print(64, 38, id(opensans), TextAlign::CENTER, id(media_artist).state.c_str());
+          int title_width = 0, artist_width = 0, ignored1, ignored2, ignored3;
+          id(opensans)->measure(title, &title_width, &ignored1, &ignored2, &ignored3);
+          id(opensans)->measure(artist, &artist_width, &ignored1, &ignored2, &ignored3);
+          int half_title_width = title_width / 2;
+          int half_artist_width = artist_width / 2;
+
+          if (title[0] != '\0' || artist[0] != '\0') {
+            // Draw title text:
+            if (title_width >= 122) {
+              if (title_scroll_pos + half_title_width < 0) {
+                title_scroll_pos = wrapped_title_scroll_pos;
+                wrapped_title_scroll_pos = 120 + half_title_width;
+              } else if (title_scroll_pos + half_title_width < 64) {
+                it.print(wrapped_title_scroll_pos, 10, id(opensans), TextAlign::CENTER, title);
+                wrapped_title_scroll_pos -= 24;
+              }
+              it.print(title_scroll_pos, 10, id(opensans), TextAlign::CENTER, title);
+              title_scroll_pos -= 24;
+            } else it.print(64, 10, id(opensans), TextAlign::CENTER, title);
+
+            // Draw artist text:
+            if (artist_width >= 122) {
+              if (artist_scroll_pos + half_artist_width < 0) {
+                artist_scroll_pos = wrapped_artist_scroll_pos;
+                wrapped_artist_scroll_pos = 120 + half_artist_width;
+              } else if (artist_scroll_pos + half_artist_width < 64) {
+                it.print(wrapped_artist_scroll_pos, 24, id(opensans), TextAlign::CENTER, artist);
+                wrapped_artist_scroll_pos -= 24;
+              }
+              it.print(artist_scroll_pos, 24, id(opensans), TextAlign::CENTER, artist);
+              artist_scroll_pos -= 24;
+            } else it.print(64, 24, id(opensans), TextAlign::CENTER, artist);
+          } else it.print(64, 10, id(opensans), TextAlign::CENTER, "Player not connected");
 
           // Draw Volume Bar:
-          it.print(-1, 49, id(mdi), COLOR_ON, "󰕾", COLOR_OFF); // Print volume-high icon
-          it.rectangle(18, 52, 108, 10); // Volume bar outline
-          it.filled_rectangle(19, 53, int(id(media_volume).state * 107), 8); // Volume bar fill
+          it.print(1, 31, id(mdi_16), COLOR_ON, "󰕾", COLOR_OFF); // Print volume-high icon
+          it.rectangle(18, 36, 107, 6); // Volume bar outline
+          it.filled_rectangle(19, 37, int(id(media_volume).state * 106), 4); // Volume bar fill
+          // Draw common UI controls:
+          id(render_ui_controls).execute();
+
       - id: statsPage
         lambda: |-
           // Draw Stats
           auto wifi_signal = id(${device_name}_wifi_signal).state;
-          if (wifi_signal < -75) it.print(0, -2, id(mdi), "󰤟"); // wifi-strength-1
-          else if (wifi_signal < -50) it.print(0, -2, id(mdi), "󰤢"); // wifi-strength-2
-          else if (wifi_signal < -25) it.print(0, -2, id(mdi), "󰤥"); // wifi-strength-3
-          else it.print(0, -2, id(mdi), "󰤨"); // wifi-strength-4
-          it.printf(22, -1, id(opensans), "%.0f%%", wifi_signal);
+          if (wifi_signal < -75) it.print(3, 0, id(mdi_16), "󰤟"); // wifi-strength-1
+          else if (wifi_signal < -50) it.print(3, 0, id(mdi_16), "󰤢"); // wifi-strength-2
+          else if (wifi_signal < -25) it.print(3, 0, id(mdi_16), "󰤥"); // wifi-strength-3
+          else it.print(3, 0, id(mdi_16), "󰤨"); // wifi-strength-4
+          it.printf(22, 0, id(opensans), "%.0f%%", wifi_signal);
           bool api_connected = global_api_server->is_connected();
-          if (api_connected) it.print(0, 12, id(mdi), "󰄙"); // cast-connected icon
-          else it.print(0, 12, id(mdi), "󰄘"); // cast icon
-          it.print(22, 12, id(opensans), api_connected ? "Connected" : "Disconnected");
-          it.print(0, 28, id(mdi), "󰃟"); // brightness-6 icon
-          it.printf(22, 28, id(opensans), "%.2f%%", id(pot).state);
-
-          // Draw Physical Button Icon Representations:
-          it.line(0, 45, 128, 45); // Horizontal line
-          it.print(3, 46, id(mdi), "󰍺"); // monitor-multiple icon
-          it.print(30, 46, id(mdi), "󰒮"); // skip-previous icon
-          it.print(56, 46, id(mdi), "󰐎"); // play-pause icon
-          it.print(82, 46, id(mdi), "󰒭"); // skip-next icon
-          it.print(109, 46, id(mdi), "󱬐"); // volume-equal icon
+          if (api_connected) it.print(2, 15, id(mdi_16), "󰄙"); // cast-connected icon
+          else it.print(2, 14, id(mdi_16), "󰄘"); // cast icon
+          it.print(22, 14, id(opensans), api_connected ? "Connected" : "Disconnected");
+          it.print(2, 30, id(mdi_16), "󰃟"); // brightness-6 icon
+          it.printf(22, 29, id(opensans), "%.2f%%", id(undecided).state);
+          // Draw common UI controls:
+          id(render_ui_controls).execute();
 
 binary_sensor:
   - platform: gpio
     internal: true
     pin:
       number: D3
-      inverted: True
       mode:
         input: true
         pullup: true
@@ -188,7 +213,6 @@ binary_sensor:
     internal: true
     pin:
       number: RX
-      inverted: True
       mode:
         input: true
         pullup: true
@@ -202,7 +226,6 @@ binary_sensor:
     internal: true
     pin:
       number: D4
-      inverted: True
       mode:
         input: true
         pullup: true
@@ -216,7 +239,6 @@ binary_sensor:
     internal: true
     pin:
       number: D5
-      inverted: True
       mode:
         input: true
         pullup: true
@@ -230,7 +252,7 @@ binary_sensor:
     internal: true
     pin:
       number: D8
-      inverted: True
+      inverted: true
       mode:
         input: true # Internal pullup not available on D8, needs external pullup resistor
     id: media_volume_sync
@@ -245,27 +267,24 @@ button:
 
 sensor:
   - platform: adc
-    id: pot
+    id: undecided
     pin: A0
-    name: "Brightness Sensor"
-    update_interval: 10s
-    on_value:
-      then:
-        - lambda: |-
-            id(screen).set_contrast(round(x * 100.0) / 100.0); // Adjust display brightness based on photoresistor sensor value.
+    name: "undecided"
+    update_interval: 30s
+    # on_value:
+    #   then:
+    #     - lambda: |-
     internal: true
   - platform: rotary_encoder
     name: "Volume"
     id: volume
     pin_a:
       number: D2
-      inverted: true
       mode:
         input: true
         pullup: true
     pin_b:
       number: D1
-      inverted: true
       mode:
         input: true
         pullup: true
@@ -280,7 +299,7 @@ sensor:
           data:
             entity_id: media_player.audio
     filters:
-      - debounce: 80ms
+      - debounce: 50ms
     internal: true
   - platform: wifi_signal
     name: "${friendly_name} WiFi signal"
