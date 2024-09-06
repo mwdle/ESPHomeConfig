@@ -59,13 +59,17 @@ ota:
 #     password: !secret otapass
 
 font:
-  - file: "fonts/OpenSans-Regular.ttf" # https://fonts.google.com/specimen/Open+Sans
+  - file:
+      url: "https://raw.githubusercontent.com/googlefonts/opensans/main/fonts/ttf/OpenSans-Regular.ttf"
+      type: web
     id: opensans
     size: 12
     glyphs:
       "'’&@!,.?\"%()[]+-=`~#*_:°•0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz|/àáãôçñ"
 
-  - file: "fonts/MaterialDesignIcons.ttf" # https://github.com/Templarian/MaterialDesign-Webfont/blob/master/fonts/materialdesignicons-webfont.ttf
+  - file:
+      url: "https://raw.githubusercontent.com/Templarian/MaterialDesign-Webfont/master/fonts/materialdesignicons-webfont.ttf"
+      type: web
     id: mdi_16
     size: 16
     glyphs: [
@@ -80,7 +84,9 @@ font:
       '󰍺', # monitor-multiple
     ]
 
-  - file: "fonts/MaterialDesignIcons.ttf" # https://github.com/Templarian/MaterialDesign-Webfont/blob/master/fonts/materialdesignicons-webfont.ttf
+  - file:
+      url: "https://raw.githubusercontent.com/Templarian/MaterialDesign-Webfont/master/fonts/materialdesignicons-webfont.ttf"
+      type: web
     id: mdi_18
     size: 18
     glyphs: [
@@ -92,8 +98,8 @@ font:
     ]
 
 i2c:
-  sda: D6
-  scl: D7
+  sda: D7
+  scl: D6
   scan: true
   frequency: 400kHz # This might help prevent blocking delays and unexpected resets caused by display components. Commenting this out results in no wifi connection.
 
@@ -136,16 +142,16 @@ display:
           const char* title = id(media_title).state.c_str();
           const char* artist = id(media_artist).state.c_str();
 
-          static int title_scroll_pos = 64, wrapped_title_scroll_pos = 140;
-          static int artist_scroll_pos = 64, wrapped_artist_scroll_pos = 140;
+          if (global_api_server->is_connected() && title[0] != '\0') {
+            int title_width = 0, artist_width = 0, ignored1, ignored2, ignored3;
+            id(opensans)->measure(title, &title_width, &ignored1, &ignored2, &ignored3);
+            id(opensans)->measure(artist, &artist_width, &ignored1, &ignored2, &ignored3);
+            int half_title_width = title_width / 2;
+            int half_artist_width = artist_width / 2;
 
-          int title_width = 0, artist_width = 0, ignored1, ignored2, ignored3;
-          id(opensans)->measure(title, &title_width, &ignored1, &ignored2, &ignored3);
-          id(opensans)->measure(artist, &artist_width, &ignored1, &ignored2, &ignored3);
-          int half_title_width = title_width / 2;
-          int half_artist_width = artist_width / 2;
+            static int title_scroll_pos = 64, wrapped_title_scroll_pos = 120 + half_title_width;
+            static int artist_scroll_pos = 64, wrapped_artist_scroll_pos = 120 + half_artist_width;
 
-          if (title[0] != '\0' || artist[0] != '\0') {
             // Draw title text:
             if (title_width >= 122) {
               if (title_scroll_pos + half_title_width < 0) {
@@ -171,12 +177,14 @@ display:
               it.print(artist_scroll_pos, 24, id(opensans), TextAlign::CENTER, artist);
               artist_scroll_pos -= 24;
             } else it.print(64, 24, id(opensans), TextAlign::CENTER, artist);
-          } else it.print(64, 10, id(opensans), TextAlign::CENTER, "Player not connected");
 
-          // Draw Volume Bar:
-          it.print(1, 31, id(mdi_16), COLOR_ON, "󰕾", COLOR_OFF); // Print volume-high icon
-          it.rectangle(18, 36, 107, 6); // Volume bar outline
-          it.filled_rectangle(19, 37, int(id(media_volume).state * 106), 4); // Volume bar fill
+            // Draw Volume Bar:
+            it.print(1, 31, id(mdi_16), COLOR_ON, "󰕾", COLOR_OFF); // Print volume-high icon
+            it.rectangle(18, 36, 107, 6); // Volume bar outline
+            it.filled_rectangle(19, 37, int(id(media_volume).state * 106), 4); // Volume bar fill
+          } 
+          else it.print(64, 24, id(opensans), TextAlign::CENTER, "Player not connected");
+
           // Draw common UI controls:
           id(render_ui_controls).execute();
 
