@@ -13,7 +13,7 @@ esphome:
 esp8266:
   board: nodemcuv2
   framework:
-    version: latest
+    version: recommended
 
 wifi:
   ssid: !secret wifissid
@@ -65,7 +65,7 @@ font:
     id: opensans
     size: 12
     glyphs:
-      "'’&@!,.?\"%()[]+-=`~#*_:°•0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz|/àáãôçñ"
+      "%’&!\"'()+,-_.:°/$€£¥?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyzÀàÁáÃãÈèÉéẼẽÌìÍíÑñÒòÓóÕõØøŚśÙùÚúŨũ"
 
   - file:
       url: "https://raw.githubusercontent.com/Templarian/MaterialDesign-Webfont/master/fonts/materialdesignicons-webfont.ttf"
@@ -74,14 +74,13 @@ font:
     size: 16
     glyphs: [
       '󰕾', # volume-high
-      '󰤟', # wifi-strength-1
-      '󰤢', # wifi-strength-2
-      '󰤥', # wifi-strength-3
-      '󰤨', # wifi-strength-4
+      '󰖩', # wifi
+      '󰖪', # wifi-off
       '󰄘', # cast
       '󰄙', # cast-connected
       '󰃟', # brightness-6
       '󰍺', # monitor-multiple
+      '󱮖', # knob
     ]
 
   - file:
@@ -101,7 +100,7 @@ i2c:
   sda: D7
   scl: D6
   scan: true
-  frequency: 400kHz # This might help prevent blocking delays and unexpected resets caused by display components. Commenting this out results in no wifi connection.
+  frequency: 400kHz # This might help prevent blocking delays and unexpected resets caused by display components. It also seems that removing this results in no wifi connection.
 
 time:
   - platform: homeassistant
@@ -139,44 +138,101 @@ display:
     pages:
       - id: playbackPage
         lambda: |-
+          static int width_threshold = 122;
+          static int last_title_width = 0;
+          static int last_artist_width = 0;
+
           const char* title = id(media_title).state.c_str();
           const char* artist = id(media_artist).state.c_str();
 
           if (global_api_server->is_connected() && title[0] != '\0') {
-            int title_width = 0, artist_width = 0, ignored1, ignored2, ignored3;
+            static int title_width = 0, artist_width = 0, ignored1, ignored2, ignored3;
             id(opensans)->measure(title, &title_width, &ignored1, &ignored2, &ignored3);
             id(opensans)->measure(artist, &artist_width, &ignored1, &ignored2, &ignored3);
-            int half_title_width = title_width / 2;
-            int half_artist_width = artist_width / 2;
+            static int half_title_width = title_width / 2;
+            static int half_artist_width = artist_width / 2;
 
-            static int title_scroll_pos = 64, wrapped_title_scroll_pos = 120 + half_title_width;
-            static int artist_scroll_pos = 64, wrapped_artist_scroll_pos = 120 + half_artist_width;
+            static int title_scroll_pos = 64, wrapped_title_scroll_pos = 120 + (title_width >= artist_width ? half_title_width : half_artist_width);
+            static int artist_scroll_pos = 64, wrapped_artist_scroll_pos = 120 + (artist_width > title_width ? half_artist_width : half_title_width);
 
-            // Draw title text:
-            if (title_width >= 122) {
-              if (title_scroll_pos + half_title_width < 0) {
+            // If the song changed, recalculate and set the starting positions
+            if (title_width != last_title_width && artist_width != last_artist_width) {
+              last_title_width = title_width;
+              last_artist_width = artist_width;
+              half_title_width = title_width / 2;
+              half_artist_width = artist_width / 2;
+              title_scroll_pos = 64, wrapped_title_scroll_pos = 120 + (title_width >= artist_width ? half_title_width : half_artist_width);
+              artist_scroll_pos = 64, wrapped_artist_scroll_pos = 120 + (artist_width > title_width ? half_artist_width : half_title_width);
+            }
+
+            // If title and artist fit comfortably on the display, center both.
+            if (title_width < width_threshold && artist_width < width_threshold) {
+              it.print(64, 10, id(opensans), TextAlign::CENTER, title);
+              it.print(64, 24, id(opensans), TextAlign::CENTER, artist);
+            }
+            // If the title does not fit comfortably on the display but the artist does, scroll the title text, and center the artist.
+            else if (title_width >= width_threshold && artist_width < width_threshold) {
+              if (title_scroll_pos + half_title_width < 0) { // Reset the wrap around scroll position if the title has scrolled off the display
                 title_scroll_pos = wrapped_title_scroll_pos;
                 wrapped_title_scroll_pos = 120 + half_title_width;
-              } else if (title_scroll_pos + half_title_width < 64) {
+              } else if (title_scroll_pos + half_title_width < 64) { // If the title is on the left half of the display, print the wrap around title on the right half
                 it.print(wrapped_title_scroll_pos, 10, id(opensans), TextAlign::CENTER, title);
                 wrapped_title_scroll_pos -= 24;
               }
               it.print(title_scroll_pos, 10, id(opensans), TextAlign::CENTER, title);
+              it.print(64, 24, id(opensans), TextAlign::CENTER, artist);
               title_scroll_pos -= 24;
-            } else it.print(64, 10, id(opensans), TextAlign::CENTER, title);
-
-            // Draw artist text:
-            if (artist_width >= 122) {
-              if (artist_scroll_pos + half_artist_width < 0) {
-                artist_scroll_pos = wrapped_artist_scroll_pos;
-                wrapped_artist_scroll_pos = 120 + half_artist_width;
-              } else if (artist_scroll_pos + half_artist_width < 64) {
+            }
+            // If the artist does not fit comfortably on the display but the title does, scroll the artist text, and center the title.
+            else if (artist_width >= width_threshold && title_width < width_threshold) {
+              if (artist_scroll_pos + half_artist_width < 0) { // Reset the wrap around scroll position if the artist has scrolled off the display
+                  artist_scroll_pos = wrapped_artist_scroll_pos;
+                  wrapped_artist_scroll_pos = 120 + half_artist_width;
+              } else if (artist_scroll_pos + half_artist_width < 64) { // If the artist is on the left half of the display, print the wrap around artist on the right half
                 it.print(wrapped_artist_scroll_pos, 24, id(opensans), TextAlign::CENTER, artist);
                 wrapped_artist_scroll_pos -= 24;
               }
               it.print(artist_scroll_pos, 24, id(opensans), TextAlign::CENTER, artist);
+              it.print(64, 10, id(opensans), TextAlign::CENTER, title);
               artist_scroll_pos -= 24;
-            } else it.print(64, 24, id(opensans), TextAlign::CENTER, artist);
+            }
+            // If the title nor artist fit comfortably on the display, scroll both.
+            else if (artist_width >= width_threshold && title_width >= width_threshold) {
+              if (title_width >= artist_width) {
+                if (title_scroll_pos + half_title_width < 0) { // Reset the wrap around scroll positions if the title has scrolled off the display
+                  title_scroll_pos = wrapped_title_scroll_pos;
+                  artist_scroll_pos = wrapped_artist_scroll_pos;
+                  wrapped_title_scroll_pos = 120 + half_title_width;
+                  wrapped_artist_scroll_pos = 120 + half_title_width;
+                } else if (title_scroll_pos + half_title_width < 64) { // If the title is on the left half of the display, print the wrap around title and artist on the right half
+                  it.print(wrapped_title_scroll_pos, 10, id(opensans), TextAlign::CENTER, title);
+                  it.print(wrapped_artist_scroll_pos, 24, id(opensans), TextAlign::CENTER, artist);
+                  wrapped_title_scroll_pos -= 24;
+                  wrapped_artist_scroll_pos -= 24;
+                }
+                it.print(title_scroll_pos, 10, id(opensans), TextAlign::CENTER, title);
+                it.print(artist_scroll_pos, 24, id(opensans), TextAlign::CENTER, artist);
+                title_scroll_pos -= 24;
+                artist_scroll_pos -= 24;
+              }
+              else {
+                if (artist_scroll_pos + half_artist_width < 0) { // Reset the wrap around scroll positions if the artist has scrolled off the display
+                    artist_scroll_pos = wrapped_artist_scroll_pos;
+                    title_scroll_pos = wrapped_title_scroll_pos;
+                    wrapped_artist_scroll_pos = 120 + half_artist_width;
+                    wrapped_title_scroll_pos = 120 + half_artist_width;
+                } else if (artist_scroll_pos + half_artist_width < 64) { // If the artist is on the left half of the display, print the wrap around artist and title on the right half
+                  it.print(wrapped_artist_scroll_pos, 24, id(opensans), TextAlign::CENTER, artist);
+                  it.print(wrapped_title_scroll_pos, 10, id(opensans), TextAlign::CENTER, title);
+                  wrapped_artist_scroll_pos -= 24;
+                  wrapped_title_scroll_pos -= 24;
+                }
+                it.print(artist_scroll_pos, 24, id(opensans), TextAlign::CENTER, artist);
+                it.print(title_scroll_pos, 10, id(opensans), TextAlign::CENTER, title);
+                artist_scroll_pos -= 24;
+                title_scroll_pos -= 24;
+              }
+            }
 
             // Draw Volume Bar:
             it.print(1, 31, id(mdi_16), COLOR_ON, "󰕾", COLOR_OFF); // Print volume-high icon
@@ -192,17 +248,15 @@ display:
         lambda: |-
           // Draw Stats
           auto wifi_signal = id(${device_name}_wifi_signal).state;
-          if (wifi_signal < -75) it.print(3, 0, id(mdi_16), "󰤟"); // wifi-strength-1
-          else if (wifi_signal < -50) it.print(3, 0, id(mdi_16), "󰤢"); // wifi-strength-2
-          else if (wifi_signal < -25) it.print(3, 0, id(mdi_16), "󰤥"); // wifi-strength-3
-          else it.print(3, 0, id(mdi_16), "󰤨"); // wifi-strength-4
+          if (isnan(wifi_signal) || wifi_signal > 0) it.print(3, 0, id(mdi_16), "󰖪"); // wifi
+          else it.print(3, 0, id(mdi_16), "󰖩"); // wifi-off
           it.printf(22, 0, id(opensans), "%.0f%%", wifi_signal);
           bool api_connected = global_api_server->is_connected();
           if (api_connected) it.print(2, 15, id(mdi_16), "󰄙"); // cast-connected icon
           else it.print(2, 14, id(mdi_16), "󰄘"); // cast icon
           it.print(22, 14, id(opensans), api_connected ? "Connected" : "Disconnected");
-          it.print(2, 30, id(mdi_16), "󰃟"); // brightness-6 icon
-          it.printf(22, 29, id(opensans), "%.2f%%", id(undecided).state);
+          it.print(3, 29, id(mdi_16), "󱮖"); // knob icon
+          it.printf(22, 29, id(opensans), "%.2f%%", id(knob).state);
           // Draw common UI controls:
           id(render_ui_controls).execute();
 
@@ -275,10 +329,10 @@ button:
 
 sensor:
   - platform: adc
-    id: undecided
+    id: knob
     pin: A0
-    name: "undecided"
-    update_interval: 30s
+    name: Knob
+    update_interval: 1s
     # on_value:
     #   then:
     #     - lambda: |-
