@@ -4,6 +4,3 @@ substitutions:
   device_name: nm
   device_description: Google Nest Mini | Power Controls
   friendly_name: Nest Mini Power
-  ip_address: 192.168.0.102
-  gateway: 192.168.0.1
-  subnet: 255.255.255.0

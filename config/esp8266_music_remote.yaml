@@ -2,9 +2,6 @@ substitutions:
   device_name: emr
   device_description: ESP8266 Music Remote
   friendly_name: Music Remote
-  ip_address: 192.168.0.107
-  gateway: 192.168.0.1
-  subnet: 255.255.255.0
 
 esphome:
   name: ${device_name}
@@ -20,10 +17,6 @@ wifi:
   password: !secret wifipass
   power_save_mode: none # Ensure the device remains connected and active so it can always have the correct state. Supposedly this option also helps with preventing unexpected resets on ESP8266 devices.
   fast_connect: true # Don't do a full scan, connect immediately.
-  manual_ip:
-    static_ip: ${ip_address}
-    gateway: ${gateway}
-    subnet: ${subnet}
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
@@ -155,8 +148,8 @@ display:
             static int title_scroll_pos = 64, wrapped_title_scroll_pos = 120 + (title_width >= artist_width ? half_title_width : half_artist_width);
             static int artist_scroll_pos = 64, wrapped_artist_scroll_pos = 120 + (artist_width > title_width ? half_artist_width : half_title_width);
 
-            // If the song changed, recalculate and set the starting positions
-            if (title_width != last_title_width && artist_width != last_artist_width) {
+            // If the track changed, recalculate the starting positions
+            if (title_width != last_title_width || artist_width != last_artist_width) {
               last_title_width = title_width;
               last_artist_width = artist_width;
               half_title_width = title_width / 2;

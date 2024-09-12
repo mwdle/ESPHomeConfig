@@ -10,10 +10,6 @@ esp8266:
 wifi:
   ssid: !secret wifissid
   password: !secret wifipass
-  manual_ip:
-    static_ip: ${ip_address}
-    gateway: ${gateway}
-    subnet: ${subnet}
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:

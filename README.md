@@ -54,7 +54,17 @@ Configurations and flashing instructions for my ESPHome converted Gosund, Sonoff
     ```  
 
 5. Open a terminal in the directory containing the docker-compose file.  
-6. Start the container:  
+6. Create docker macvlan network for the container
+
+    ```shell
+    docker network create -d macvlan --subnet=192.168.0.0/24 --gateway=192.168.0.1 -o parent=eno1 AAA_LAN
+    ```  
+
+    * Ensure the gateway and subnet match your LAN network.  
+    * AAA in the network name ensures Docker uses this network as the primary interface for all connected containers.  
+    * eno1 is the name of the network interface on my system. Replace this with the name of your network interface.
+
+7. Start the container:  
 
     ```shell
     docker compose up -d

@@ -2,11 +2,15 @@ services:
   esphome:
     container_name: esphome
     image: ghcr.io/esphome/esphome
-    ports:
-      - 6052:6052
-      - 8266:8266
+    networks:
+      - AAA_LAN
     volumes:
       - ${PWD}/config:/config
       - ${DOCKER_VOLUMES}/ESPHome/.esphome:/config/.esphome # Put build directory outside of the project folder.
       - /etc/localtime:/etc/localtime:ro
     restart: no
+
+networks:
+  AAA_LAN:
+    name: AAA_LAN
+    external: true

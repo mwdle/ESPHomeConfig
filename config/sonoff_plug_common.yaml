@@ -10,10 +10,6 @@ esp8266:
 wifi:
   ssid: !secret wifissid
   password: !secret wifipass
-  manual_ip:
-    static_ip: ${ip_address}
-    gateway: ${gateway}
-    subnet: ${subnet}
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
@@ -40,10 +36,6 @@ web_server:
   auth:
     username: !secret otauser
     password: !secret otapass
-
-time:
-  - platform: homeassistant
-    id: esptime
 
 logger:
   baud_rate: 0 # (UART logging interferes with cse7766)
