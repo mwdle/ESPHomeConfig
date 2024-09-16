@@ -257,7 +257,7 @@ binary_sensor:
   - platform: gpio
     internal: true
     pin:
-      number: D3
+      number: RX
       mode:
         input: true
         pullup: true
@@ -267,7 +267,7 @@ binary_sensor:
   - platform: gpio
     internal: true
     pin:
-      number: RX
+      number: D3
       mode:
         input: true
         pullup: true
@@ -297,12 +297,10 @@ binary_sensor:
       mode:
         input: true
         pullup: true
-    id: media_next_track
+    id: media_volume_sync
     on_press:
       - homeassistant.service:
-          service: media_player.media_next_track
-          data:
-            entity_id: media_player.audio
+          service: script.sync_audio_group_volume
   - platform: gpio
     internal: true
     pin:
@@ -310,10 +308,12 @@ binary_sensor:
       inverted: true
       mode:
         input: true # Internal pullup not available on D8, needs external pullup resistor
-    id: media_volume_sync
+    id: media_next_track
     on_press:
       - homeassistant.service:
-          service: script.sync_audio_group_volume
+          service: media_player.media_next_track
+          data:
+            entity_id: media_player.audio
 
 button:
   - platform: restart
