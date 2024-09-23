@@ -1,4 +1,4 @@
-# See the README instructions for using this common configuration.
+# See the README instructions for using this common configuration
 esphome:
   name: ${device_name}
   comment: ${device_description}
@@ -10,7 +10,7 @@ esp8266:
 wifi:
   ssid: !secret wifissid
   password: !secret wifipass
-  fast_connect: true # Don't do a full scan, connect immediately.
+  fast_connect: true # Don't do a full scan, connect immediately
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
@@ -19,7 +19,7 @@ wifi:
 
 captive_portal:
 
-# Disable logging to save memory and reduce unexpected crashes and resets.
+# Disable logging to save memory and reduce unexpected crashes and resets
 # logger:
 # baud_rate: 0 #disable UART logging
 
@@ -34,7 +34,7 @@ ota:
     id: my_ota
     password: !secret otapass
 
-# Disable web server to save memory and reduce unexpected crashes and resets.
+# Disable web server to save memory and reduce unexpected crashes and resets
 # web_server:
 #   version: 3
 #   port: 80
@@ -87,7 +87,7 @@ status_led:
 output:
   - platform: gpio
     pin: GPIO13
-    inverted: false # Not inverted (light will be off when device is on).
+    inverted: false # Not inverted (light will be off when device is on)
     id: led
 
 sensor:

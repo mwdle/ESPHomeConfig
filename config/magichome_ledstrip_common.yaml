@@ -1,4 +1,4 @@
-# See the README instructions for using this common configuration.
+# See the README instructions for using this common configuration
 esphome:
   name: ${device_name}
   comment: ${device_description}
@@ -10,7 +10,7 @@ esp8266:
 wifi:
   ssid: !secret wifissid
   password: !secret wifipass
-  fast_connect: true # Don't do a full scan, connect immediately.
+  fast_connect: true # Don't do a full scan, connect immediately
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
@@ -19,14 +19,15 @@ wifi:
 
 captive_portal:
 
-# Disable logging because it causes crashes due to excessive logging when some custom light effects are enabled.
+# Disable logging because it causes crashes due to excessive logging when some custom light effects are enabled
 # logger:
 #   baud_rate: 0 #disable UART logging
 
 # Enable Home Assistant API
+# Disable encryption for better performance / less memory / less unexpected crashing (the ESP8285 based MagicHome boards don't seem powerful enough to reliably handle encryption)
 api:
-  encryption:
-    key: !secret encryption_key
+  # encryption:
+  #   key: !secret encryption_key
 
 # Enable OTA updates
 ota:
@@ -34,7 +35,7 @@ ota:
     id: my_ota
     password: !secret otapass
 
-# Disable web server to save memory and reduce unexpected crashes and resets.
+# Disable web server to save memory and reduce unexpected crashes and resets
 # web_server:
 #   version: 3
 #   port: 80
@@ -790,7 +791,7 @@ sensor:
     id: "${device_name}_uptime"
     update_interval: 60s
     icon: mdi:timer-outline
-    # Sensor for light effect synchronization using Home Assistant automations.
+    # Sensor for light effect synchronization using Home Assistant automations
   - platform: template
     name: ${friendly_name} Color Loop Hue
     id: ${device_name}_color_loop_hue
@@ -820,7 +821,7 @@ button:
   - platform: restart
     name: "Restart ${friendly_name}"
     icon: mdi:restart
-    # Button that enables light effect synchronization using Home Assistant automations.
+    # Button that enables light effect synchronization using Home Assistant automations
   - platform: template
     name: Decrement ${friendly_name} Color Loop Hue
     id: ${device_name}_decrement_hue
@@ -828,7 +829,7 @@ button:
     on_press:
       then:
         - lambda: 'id(hue) = (id(hue) - 1 < 0) ? 359 : id(hue) - 1;'
-    # Button that enables light effect synchronization using Home Assistant automations.
+    # Button that enables light effect synchronization using Home Assistant automations
   - platform: template
     name: Increment ${friendly_name} Color Loop Hue
     id: ${device_name}_increment_hue

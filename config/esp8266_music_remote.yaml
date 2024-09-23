@@ -15,8 +15,8 @@ esp8266:
 wifi:
   ssid: !secret wifissid
   password: !secret wifipass
-  power_save_mode: none # Ensure the device remains connected and active so it can always have the correct state. Supposedly this option also helps with preventing unexpected resets on ESP8266 devices.
-  fast_connect: true # Don't do a full scan, connect immediately.
+  power_save_mode: none # Ensure the device remains connected and active so it can always have the correct state. Supposedly this option also helps with preventing unexpected resets on ESP8266 devices
+  fast_connect: true # Don't do a full scan, connect immediately
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
@@ -34,7 +34,7 @@ captive_portal:
 
 # Enable Home Assistant API
 api:
-  # encryption: # ESP8266 isn't powerful enough to remain stable while providing encryption. Enabling encryption may result in frequent and unexpected resets.
+  # encryption: # ESP8266 isn't powerful enough to remain stable while providing encryption. Enabling encryption may result in frequent and unexpected resets
   #   key: !secret encryption_key
 
 # Enable OTA updates
@@ -93,7 +93,7 @@ i2c:
   sda: D7
   scl: D6
   scan: true
-  frequency: 400kHz # This might help prevent blocking delays and unexpected resets caused by display components. It also seems that removing this results in no wifi connection.
+  frequency: 400kHz # This might help prevent blocking delays and unexpected resets caused by display components. It also seems that removing this results in no wifi connection
 
 time:
   - platform: homeassistant
