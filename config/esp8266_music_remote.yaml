@@ -58,7 +58,7 @@ font:
     id: opensans
     size: 12
     glyphs:
-      "%’&!\"'()+,-_.:°/$€£¥?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyzÀàÁáÃãÈèÉéẼẽÌìÍíÑñÒòÓóÕõØøŚśÙùÚúŨũ"
+      "%’&!\"'()+,-_.:°/$€£¥?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyzÀàÁáÃãçÈèÉéẼẽÌìÍíÑñôÒòÓóÕõØøŚśÙùÚúŨũ"
 
   - file:
       url: "https://raw.githubusercontent.com/Templarian/MaterialDesign-Webfont/master/fonts/materialdesignicons-webfont.ttf"
@@ -354,7 +354,7 @@ sensor:
           data:
             entity_id: media_player.audio
     filters:
-      - debounce: 50ms
+      - debounce: 10ms
     internal: true
   - platform: wifi_signal
     name: "${friendly_name} WiFi signal"
