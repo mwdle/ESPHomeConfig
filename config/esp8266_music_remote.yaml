@@ -93,7 +93,7 @@ i2c:
   sda: D7
   scl: D6
   scan: true
-  frequency: 400kHz # This might help prevent blocking delays and unexpected resets caused by display components. It also seems that removing this results in no wifi connection
+  frequency: 100kHz # This might help prevent blocking delays and unexpected resets caused by display components. It also seems that removing this results in no wifi connection
 
 time:
   - platform: homeassistant
@@ -248,8 +248,8 @@ display:
           if (api_connected) it.print(2, 15, id(mdi_16), "󰄙"); // cast-connected icon
           else it.print(2, 14, id(mdi_16), "󰄘"); // cast icon
           it.print(22, 14, id(opensans), api_connected ? "Connected" : "Disconnected");
-          it.print(3, 29, id(mdi_16), "󱮖"); // knob icon
-          it.printf(22, 29, id(opensans), "%.2f%%", id(knob).state);
+          // it.print(3, 29, id(mdi_16), "󱮖"); // knob icon
+          // it.printf(22, 29, id(opensans), "%.2f%%", id(knob).state);
           // Draw common UI controls:
           id(render_ui_controls).execute();
 
@@ -276,7 +276,7 @@ binary_sensor:
       - homeassistant.service:
           service: media_player.media_previous_track
           data:
-            entity_id: media_player.audio
+            entity_id: media_player.audio_direct
   - platform: gpio
     internal: true
     pin:
@@ -313,7 +313,7 @@ binary_sensor:
       - homeassistant.service:
           service: media_player.media_next_track
           data:
-            entity_id: media_player.audio
+            entity_id: media_player.audio_direct
 
 button:
   - platform: restart
@@ -321,15 +321,6 @@ button:
     icon: mdi:restart
 
 sensor:
-  - platform: adc
-    id: knob
-    pin: A0
-    name: Knob
-    update_interval: 1s
-    # on_value:
-    #   then:
-    #     - lambda: |-
-    internal: true
   - platform: rotary_encoder
     name: "Volume"
     id: volume
@@ -369,20 +360,6 @@ sensor:
     internal: true
 
 text_sensor:
-  - platform: version
-    name: "${friendly_name} ESPHome Version"
-    id: "${device_name}_esphome_version"
-    icon: mdi:numeric
-  - platform: wifi_info
-    ip_address:
-      name: ${friendly_name} IP Address
-      icon: mdi:ip-network
-    ssid:
-      name: ${friendly_name} Connected SSID
-      icon: mdi:wifi-star
-    mac_address:
-      name: ${friendly_name} Mac Wifi Address
-      icon: mdi:router-network-wireless
   - platform: homeassistant
     id: media_title
     entity_id: media_player.audio_direct
