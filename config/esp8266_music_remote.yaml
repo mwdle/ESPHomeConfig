@@ -1,3 +1,9 @@
+# Important note:
+# This ESPHome configuration is setup to utilize two different Home Assistant provided media_player entities.
+# While both of these media_player entities actually refer to the same physical media player, they behave differently because they are provided by different integrations in Home Assistant.
+# In the context of this configuration, media_player.audio_direct refers to the Google Cast Integration provided player, and media_player.audio refers to the Music Assistant Integration provided player.
+# This is necessary to ensure that all the media playback controls can function properly regardless of the current media source of the media player (e.g. Music Assistant, or Spotify).
+
 substitutions:
   device_name: emr
   device_description: ESP8266 Music Remote
