@@ -273,10 +273,20 @@ binary_sensor:
         pullup: true
     id: media_previous_track
     on_press:
-      - homeassistant.service:
-          service: media_player.media_previous_track
-          data:
-            entity_id: media_player.audio_direct
+      then:
+         - if:
+              condition:
+                lambda: 'return id(media_source).state == "Music Assistant";'
+              then:
+                - homeassistant.service:
+                    service: media_player.media_previous_track
+                    data:
+                      entity_id: media_player.audio
+              else:
+                - homeassistant.service:
+                    service: media_player.media_previous_track
+                    data:
+                      entity_id: media_player.audio_direct
   - platform: gpio
     internal: true
     pin:
@@ -310,10 +320,20 @@ binary_sensor:
         input: true # Internal pullup not available on D8, needs external pullup resistor
     id: media_next_track
     on_press:
-      - homeassistant.service:
-          service: media_player.media_next_track
-          data:
-            entity_id: media_player.audio_direct
+      then:
+         - if:
+              condition:
+                lambda: 'return id(media_source).state == "Music Assistant";'
+              then:
+                - homeassistant.service:
+                    service: media_player.media_next_track
+                    data:
+                      entity_id: media_player.audio
+              else:
+                - homeassistant.service:
+                    service: media_player.media_next_track
+                    data:
+                      entity_id: media_player.audio_direct
 
 button:
   - platform: restart
@@ -373,4 +393,9 @@ text_sensor:
   - platform: homeassistant
     id: media_status
     entity_id: media_player.audio_direct
+    internal: true
+  - platform: homeassistant
+    id: media_source
+    entity_id: media_player.audio_direct
+    attribute: app_name
     internal: true
