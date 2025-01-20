@@ -1,8 +1,8 @@
 # Important note:
 # This ESPHome configuration is setup to utilize two different Home Assistant provided media_player entities.
-# While both of these media_player entities actually refer to the same physical media player, they behave differently because they are provided by different integrations in Home Assistant.
+# In reality, both of these media_player entities refer to the same physical media player, but they behave differently because they are provided by different integrations in Home Assistant.
 # In the context of this configuration, media_player.audio_direct refers to the Google Cast Integration provided player, and media_player.audio refers to the Music Assistant Integration provided player.
-# This is necessary to ensure that all the media playback controls can function properly regardless of the current media source of the media player (e.g. Music Assistant, or Spotify).
+# This is necessary to ensure that all the media playback controls can function properly regardless of the current media source of the media player (e.g. Music Assistant, Spotify, etc).
 
 substitutions:
   device_name: emr
@@ -12,6 +12,9 @@ substitutions:
 esphome:
   name: ${device_name}
   comment: ${device_description}
+  # This configuration requires the esp8266_music_remote.h file which contains implementation for all display rendering, playlist management, and more.
+  includes:
+    - esp8266_music_remote.h
 
 esp8266:
   board: nodemcuv2
@@ -61,45 +64,65 @@ font:
   - file:
       url: "https://raw.githubusercontent.com/googlefonts/opensans/main/fonts/ttf/OpenSans-Regular.ttf"
       type: web
-    id: opensans
+    id: opensans_12
     size: 12
     glyphs:
-      "%’&!\"\\'()+,-_.:°/$#€£¥?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyzÀàÁáÃãçÈèÉéẼẽÌìÍíÑñôÒòÓóÕõØøŚśÙùÚúŨũ"
-
+      "@%’&!\"\\'()+,-_.:°/$#€£¥?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyzÀàÁáÃãçÈèÉéẼẽÌìÍíÑñôÒòÓóÕõØøŚśÙùÚúŨũ"
+  - file:
+      url: "https://raw.githubusercontent.com/googlefonts/opensans/main/fonts/ttf/OpenSans-Regular.ttf"
+      type: web
+    id: opensans_10
+    size: 10
+    glyphs:
+      "@%’&!\"\\'()+,-_.:°/$#€£¥?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyzÀàÁáÃãçÈèÉéẼẽÌìÍíÑñôÒòÓóÕõØøŚśÙùÚúŨũ"
   - file:
       url: "https://raw.githubusercontent.com/Templarian/MaterialDesign-Webfont/master/fonts/materialdesignicons-webfont.ttf"
       type: web
     id: mdi_16
     size: 16
     glyphs: [
-      '󰕾', # volume-high
       '󰖩', # wifi
       '󰖪', # wifi-off
       '󰄘', # cast
       '󰄙', # cast-connected
       '󰃟', # brightness-6
-      '󰍺', # monitor-multiple
-      '󱮖', # knob
+      '󰀟', # cast-variant
+      '󰋼', # information
     ]
-
   - file:
       url: "https://raw.githubusercontent.com/Templarian/MaterialDesign-Webfont/master/fonts/materialdesignicons-webfont.ttf"
       type: web
     id: mdi_18
     size: 18
     glyphs: [
+      '󱬐', # volume-equal
+      '󰕾', # volume-high
+    ]
+  - file:
+      url: "https://raw.githubusercontent.com/Templarian/MaterialDesign-Webfont/master/fonts/materialdesignicons-webfont.ttf"
+      type: web
+    id: mdi_20
+    size: 20
+    glyphs: [
+      '󰲸', # playlist-music
+    ]
+  - file:
+      url: "https://raw.githubusercontent.com/Templarian/MaterialDesign-Webfont/master/fonts/materialdesignicons-webfont.ttf"
+      type: web
+    id: mdi_21
+    size: 21
+    glyphs: [
       '󰏤', # pause
       '󰐊', # play
       '󰒮', # skip-previous
       '󰒭', # skip-next
-      '󱬐', # volume-equal
     ]
 
 i2c:
   sda: D7
   scl: D6
   scan: true
-  frequency: 400kHz # Setting to default of 50khz breaks Wi-Fi. Regardless, this results in faster display updates and less delays from blocking display operations.
+  frequency: 800kHz # Setting to default of 50khz breaks Wi-Fi for whatever reason... Either way, setting it higher results in faster display updates, less delays from blocking display operations, and provides a smoother experience overall.
 
 time:
   - platform: homeassistant
@@ -114,18 +137,12 @@ interval:
           inverted = !inverted;
           id(screen).set_invert(inverted);
 
-# Script to draw physical button icon representations on the display
-script:
-  id: render_ui_controls
-  then:
-    - lambda: |-
-        id(screen).line(0, 47, 127, 47); // Horizontal line
-        id(screen).print(13, 57, id(mdi_16), TextAlign::CENTER, "󰍺"); // monitor-multiple icon
-        id(screen).print(41, 56, id(mdi_18), TextAlign::CENTER, "󰒮"); // skip-previous icon
-        if (id(media_status).state == "playing" || id(media_status).state == "buffering") id(screen).print(67, 56, id(mdi_18), TextAlign::CENTER, "󰏤"); // pause icon
-        else id(screen).print(65, 56, id(mdi_18), TextAlign::CENTER, "󰐊"); // play icon
-        id(screen).print(91, 56, id(mdi_18), TextAlign::CENTER, "󰒭"); // skip-next icon
-        id(screen).print(117, 56, id(mdi_18), TextAlign::CENTER, "󱬐"); // volume-equal icon
+globals:
+  - id: selected_playlist
+    type: int
+    initial_value: '0'
+  - id: playlists
+    type: std::vector<char*>
 
 display:
   - platform: ssd1306_i2c
@@ -133,133 +150,56 @@ display:
     model: "SSD1306 128x64"
     address: 0x3C
     rotation: 180°
-    contrast: 0% # Use the lowest brightness to save battery life
+    contrast: 0% # Use the lowest "brightness" to save battery life
     pages:
       - id: playbackPage
         lambda: |-
-          static int width_threshold = 122;
-          static int last_title_width = 0;
-          static int last_artist_width = 0;
-
-          const char* title = id(media_title).state.c_str();
-          const char* artist = id(media_artist).state.c_str();
-
-          if (global_api_server->is_connected() && title[0] != '\0') {
-            static int title_width = 0, artist_width = 0, ignored1, ignored2, ignored3;
-            id(opensans)->measure(title, &title_width, &ignored1, &ignored2, &ignored3);
-            id(opensans)->measure(artist, &artist_width, &ignored1, &ignored2, &ignored3);
-            static int half_title_width = title_width / 2;
-            static int half_artist_width = artist_width / 2;
-
-            static int title_scroll_pos = 64, wrapped_title_scroll_pos = 120 + (title_width >= artist_width ? half_title_width : half_artist_width);
-            static int artist_scroll_pos = 64, wrapped_artist_scroll_pos = 120 + (artist_width > title_width ? half_artist_width : half_title_width);
-
-            // If the track changed, recalculate the starting positions
-            if (title_width != last_title_width || artist_width != last_artist_width) {
-              last_title_width = title_width;
-              last_artist_width = artist_width;
-              half_title_width = title_width / 2;
-              half_artist_width = artist_width / 2;
-              title_scroll_pos = 64, wrapped_title_scroll_pos = 120 + (title_width >= artist_width ? half_title_width : half_artist_width);
-              artist_scroll_pos = 64, wrapped_artist_scroll_pos = 120 + (artist_width > title_width ? half_artist_width : half_title_width);
-            }
-
-            // If title and artist fit comfortably on the display, center both.
-            if (title_width < width_threshold && artist_width < width_threshold) {
-              it.print(64, 10, id(opensans), TextAlign::CENTER, title);
-              it.print(64, 24, id(opensans), TextAlign::CENTER, artist);
-            }
-            // If the title does not fit comfortably on the display but the artist does, scroll the title text, and center the artist.
-            else if (title_width >= width_threshold && artist_width < width_threshold) {
-              if (title_scroll_pos + half_title_width < 0) { // Reset the wrap around scroll position if the title has scrolled off the display
-                title_scroll_pos = wrapped_title_scroll_pos;
-                wrapped_title_scroll_pos = 120 + half_title_width;
-              } else if (title_scroll_pos + half_title_width < 64) { // If the title is on the left half of the display, print the wrap around title on the right half
-                it.print(wrapped_title_scroll_pos, 10, id(opensans), TextAlign::CENTER, title);
-                wrapped_title_scroll_pos -= 24;
-              }
-              it.print(title_scroll_pos, 10, id(opensans), TextAlign::CENTER, title);
-              it.print(64, 24, id(opensans), TextAlign::CENTER, artist);
-              title_scroll_pos -= 24;
-            }
-            // If the artist does not fit comfortably on the display but the title does, scroll the artist text, and center the title.
-            else if (artist_width >= width_threshold && title_width < width_threshold) {
-              if (artist_scroll_pos + half_artist_width < 0) { // Reset the wrap around scroll position if the artist has scrolled off the display
-                  artist_scroll_pos = wrapped_artist_scroll_pos;
-                  wrapped_artist_scroll_pos = 120 + half_artist_width;
-              } else if (artist_scroll_pos + half_artist_width < 64) { // If the artist is on the left half of the display, print the wrap around artist on the right half
-                it.print(wrapped_artist_scroll_pos, 24, id(opensans), TextAlign::CENTER, artist);
-                wrapped_artist_scroll_pos -= 24;
-              }
-              it.print(artist_scroll_pos, 24, id(opensans), TextAlign::CENTER, artist);
-              it.print(64, 10, id(opensans), TextAlign::CENTER, title);
-              artist_scroll_pos -= 24;
-            }
-            // If the title nor artist fit comfortably on the display, scroll both.
-            else if (artist_width >= width_threshold && title_width >= width_threshold) {
-              if (title_width >= artist_width) {
-                if (title_scroll_pos + half_title_width < 0) { // Reset the wrap around scroll positions if the title has scrolled off the display
-                  title_scroll_pos = wrapped_title_scroll_pos;
-                  artist_scroll_pos = wrapped_artist_scroll_pos;
-                  wrapped_title_scroll_pos = 120 + half_title_width;
-                  wrapped_artist_scroll_pos = 120 + half_title_width;
-                } else if (title_scroll_pos + half_title_width < 64) { // If the title is on the left half of the display, print the wrap around title and artist on the right half
-                  it.print(wrapped_title_scroll_pos, 10, id(opensans), TextAlign::CENTER, title);
-                  it.print(wrapped_artist_scroll_pos, 24, id(opensans), TextAlign::CENTER, artist);
-                  wrapped_title_scroll_pos -= 24;
-                  wrapped_artist_scroll_pos -= 24;
-                }
-                it.print(title_scroll_pos, 10, id(opensans), TextAlign::CENTER, title);
-                it.print(artist_scroll_pos, 24, id(opensans), TextAlign::CENTER, artist);
-                title_scroll_pos -= 24;
-                artist_scroll_pos -= 24;
-              }
-              else {
-                if (artist_scroll_pos + half_artist_width < 0) { // Reset the wrap around scroll positions if the artist has scrolled off the display
-                    artist_scroll_pos = wrapped_artist_scroll_pos;
-                    title_scroll_pos = wrapped_title_scroll_pos;
-                    wrapped_artist_scroll_pos = 120 + half_artist_width;
-                    wrapped_title_scroll_pos = 120 + half_artist_width;
-                } else if (artist_scroll_pos + half_artist_width < 64) { // If the artist is on the left half of the display, print the wrap around artist and title on the right half
-                  it.print(wrapped_artist_scroll_pos, 24, id(opensans), TextAlign::CENTER, artist);
-                  it.print(wrapped_title_scroll_pos, 10, id(opensans), TextAlign::CENTER, title);
-                  wrapped_artist_scroll_pos -= 24;
-                  wrapped_title_scroll_pos -= 24;
-                }
-                it.print(artist_scroll_pos, 24, id(opensans), TextAlign::CENTER, artist);
-                it.print(title_scroll_pos, 10, id(opensans), TextAlign::CENTER, title);
-                artist_scroll_pos -= 24;
-                title_scroll_pos -= 24;
-              }
-            }
-
-            // Draw Volume Bar:
-            it.print(1, 31, id(mdi_16), COLOR_ON, "󰕾", COLOR_OFF); // Print volume-high icon
-            it.rectangle(18, 36, 107, 6); // Volume bar outline
-            it.filled_rectangle(19, 37, int(id(media_volume).state * 106), 4); // Volume bar fill
-          } 
-          else it.print(64, 24, id(opensans), TextAlign::CENTER, "Player not connected");
-
+          // Draw the currently playing song title and artist
+          render_active_media();
           // Draw common UI controls:
-          id(render_ui_controls).execute();
+          render_ui_controls();
+
+      - id: playlistSelectionPage
+        lambda: |-
+          // Draw Playlist Selection UI
+          render_playlist_selection();
+          // Draw common UI controls:
+          render_ui_controls();
 
       - id: statsPage
         lambda: |-
-          // Draw Stats
-          auto wifi_signal = id(${device_name}_wifi_signal).state;
-          if (isnan(wifi_signal) || wifi_signal > 0) it.print(3, 0, id(mdi_16), "󰖪"); // wifi
-          else it.print(3, 0, id(mdi_16), "󰖩"); // wifi-off
-          it.printf(22, 0, id(opensans), "%.0f%%", wifi_signal);
-          bool api_connected = global_api_server->is_connected();
-          if (api_connected) it.print(2, 15, id(mdi_16), "󰄙"); // cast-connected icon
-          else it.print(2, 14, id(mdi_16), "󰄘"); // cast icon
-          it.print(22, 14, id(opensans), api_connected ? "Connected" : "Disconnected");
-          // it.print(3, 29, id(mdi_16), "󱮖"); // knob icon
-          // it.printf(22, 29, id(opensans), "%.2f%%", id(knob).state);
-          // Draw common UI controls:
-          id(render_ui_controls).execute();
+          // Draw connection statistics (such as wifi, HA API connection status, etc)
+          render_statistics();
+          // Draw common UI controls
+          render_ui_controls();
 
 binary_sensor:
+  - platform: gpio
+    internal: true
+    pin:
+      number: TX
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    id: play_selected_playlist_button # Rotary Encoder button
+    on_press:
+      then:
+        - if:
+            condition:
+              lambda: 'return id(screen).get_active_page() == id(playlistSelectionPage);'
+            then:
+              - homeassistant.action:
+                  action: music_assistant.play_media
+                  data:
+                    entity_id: media_player.audio # Playlist selection is only available for the Music Assistant Integration provided player
+                    media_type: playlist
+                    enqueue: replace
+                  data_template:
+                    media_id: '{{ playlist }}'
+                  variables:
+                    playlist: !lambda 'return id(playlists).at(id(selected_playlist));'
+              - display.page.show: playbackPage
   - platform: gpio
     internal: true
     pin:
@@ -278,21 +218,61 @@ binary_sensor:
         input: true
         pullup: true
     id: media_previous_track
-    on_press:
-      then:
-         - if:
+    publish_initial_state: true
+    on_multi_click:
+      - timing: # on short press
+          - OFF for at most 1s
+          - ON for at least 0.05s
+        then:
+          - if:
               condition:
                 lambda: 'return id(media_source).state == "Music Assistant";'
               then:
-                - homeassistant.service:
-                    service: media_player.media_previous_track
+                - homeassistant.action:
+                    action: media_player.media_previous_track
                     data:
                       entity_id: media_player.audio
               else:
-                - homeassistant.service:
-                    service: media_player.media_previous_track
+                - homeassistant.action:
+                    action: media_player.media_previous_track
                     data:
                       entity_id: media_player.audio_direct
+      - timing: # on long press
+          - OFF for at least 1.05s
+        then:
+          - if:
+              condition:
+                lambda: 'return id(media_source).state == "Music Assistant";'
+              then:
+                - homeassistant.action:
+                    action: media_player.media_seek
+                    data:
+                      entity_id: media_player.audio # Media source is Music Assistant, fast forward using the Music Assistant Integration provided player
+                    data_template:
+                      seek_position: >- # The media position attribute only updates when a song starts, ends, or when the user interacts with playback (e.g. scrubbing, play/pause, etc). Therefore, to determine the correct position, we need to compare the current time to the media_position_updated_at attribute.
+                        {% set new_position = (int((now() - state_attr("media_player.audio",
+                        "media_position_updated_at")).seconds + state_attr("media_player.audio",
+                        "media_position")) - 15) %} 
+                        {% if new_position >= 0 %} 
+                        {{ new_position }} 
+                        {% else %} 
+                        {{ 0 }} 
+                        {% endif %}
+              else:
+                - homeassistant.action:
+                    action: media_player.media_seek
+                    data:
+                      entity_id: media_player.audio_direct # Media source is not Music Assistant, fast forward using Google Cast Integration provided player
+                    data_template:
+                      seek_position: >- # The media position attribute only updates when a song starts, ends, or when the user interacts with playback (e.g. scrubbing, play/pause, etc). Therefore, to determine the correct position, we need to compare the current time to the media_position_updated_at attribute.
+                        {% set new_position = (int((now() - state_attr("media_player.audio_direct",
+                        "media_position_updated_at")).seconds + state_attr("media_player.audio_direct",
+                        "media_position")) - 15) %} 
+                        {% if new_position >= 0 %} 
+                        {{ new_position }} 
+                        {% else %} 
+                        {{ 0 }} 
+                        {% endif %}
   - platform: gpio
     internal: true
     pin:
@@ -302,10 +282,10 @@ binary_sensor:
         pullup: true
     id: media_play_pause
     on_press:
-      - homeassistant.service:
-          service: media_player.media_play_pause
+      - homeassistant.action:
+          action: media_player.media_play_pause
           data:
-            entity_id: media_player.audio
+            entity_id: media_player.audio # Always play/pause on the Music Assistant Integration provided player to allow resuming the MA queue at player idle. Play/pause works correctly regardless of media source using the MA provided action.
   - platform: gpio
     internal: true
     pin:
@@ -315,8 +295,30 @@ binary_sensor:
         pullup: true
     id: media_volume_sync
     on_press:
-      - homeassistant.service:
-          service: script.sync_audio_group_volume
+      - homeassistant.action:
+          action: script.sync_audio_group_volume # This is a custom Home Assistant script that synchronizes/balances the volume between my Chromecast Audio powered sound system and a Google Nest Mini which are paired in an audio group. See the HA YAML below:
+                                                 # alias: Sync Audio Group Volume
+                                                 # sequence:
+                                                 #   - condition: template
+                                                 #     value_template: >-
+                                                 #       {% set volume_difference =
+                                                 #       int(((state_attr("media_player.michael_s_nest_mini", "volume_level") -
+                                                 #       state_attr("media_player.michael_s_speakers",
+                                                 #       "volume_level"))*100)|abs|round(0)) %}
+                                                 #       {{ volume_difference < 7 or volume_difference > 9 }} 
+                                                 #   - variables:
+                                                 #       new_nest_mini_volume: >-
+                                                 #         {% set new_volume = state_attr('media_player.michael_s_speakers',
+                                                 #         'volume_level') + 0.08 %} {% if new_volume > 1 %} {{ 1.0 }} {% else %}
+                                                 #         {{ new_volume }} {% endif %}
+                                                 #   - metadata: {}
+                                                 #     data:
+                                                 #       volume_level: "{{ new_nest_mini_volume }}"
+                                                 #     action: media_player.volume_set
+                                                 #     target:
+                                                 #       entity_id: media_player.michael_s_nest_mini
+                                                 # description: ""
+                                                 # icon: mdi:sync
   - platform: gpio
     internal: true
     pin:
@@ -325,21 +327,61 @@ binary_sensor:
       mode:
         input: true # Internal pullup not available on D8, needs external pullup resistor
     id: media_next_track
-    on_press:
-      then:
-         - if:
+    publish_initial_state: true
+    on_multi_click:
+      - timing: # on short press
+          - OFF for at most 1s
+          - ON for at least 0.05s
+        then:
+          - if:
               condition:
                 lambda: 'return id(media_source).state == "Music Assistant";'
               then:
-                - homeassistant.service:
-                    service: media_player.media_next_track
+                - homeassistant.action:
+                    action: media_player.media_next_track
                     data:
-                      entity_id: media_player.audio
+                      entity_id: media_player.audio # Media source is Music Assistant, skip using the Music Assistant Integration provided player
               else:
-                - homeassistant.service:
-                    service: media_player.media_next_track
+                - homeassistant.action:
+                    action: media_player.media_next_track
                     data:
-                      entity_id: media_player.audio_direct
+                      entity_id: media_player.audio_direct # Media source is not Music Assistant, skip using Google Cast Integration provided player
+      - timing: # on long press
+          - OFF for at least 1.05s
+        then:
+          - if:
+              condition:
+                lambda: 'return id(media_source).state == "Music Assistant";'
+              then:
+                - homeassistant.action:
+                    action: media_player.media_seek
+                    data:
+                      entity_id: media_player.audio # Media source is Music Assistant, fast forward using the Music Assistant Integration provided player
+                    data_template:
+                      seek_position: >- # The media position attribute only updates when a song start, ends, or when the user interacts with playback (e.g. scrubbing, play/pause, etc). Therefore, to determine the correct position, we need to compare the current time to the media_position_updated_at attribute.
+                        {% set new_position = (int((now() - state_attr("media_player.audio",
+                        "media_position_updated_at")).seconds + state_attr("media_player.audio",
+                        "media_position")) + 15) %} 
+                        {% if new_position < state_attr("media_player.audio", "media_duration") %} 
+                        {{ new_position }} 
+                        {% else %} 
+                        {{ state_attr("media_player.audio", "media_duration") - 1 }} 
+                        {% endif %}
+              else:
+                - homeassistant.action:
+                    action: media_player.media_seek
+                    data:
+                      entity_id: media_player.audio_direct  # Media source is not Music Assistant, fast forward using Google Cast Integration provided player
+                    data_template:
+                      seek_position: >-  # The media position attribute only updates when a song starts, ends, or when the user interacts with playback (e.g. scrubbing, play/pause, etc). Therefore, to determine the correct position, we need to compare the current time to the media_position_updated_at attribute.
+                        {% set new_position = (int((now() - state_attr("media_player.audio_direct",
+                        "media_position_updated_at")).seconds + state_attr("media_player.audio_direct",
+                        "media_position")) + 15) %} 
+                        {% if new_position < state_attr("media_player.audio_direct", "media_duration") %} 
+                        {{ new_position }} 
+                        {% else %} 
+                        {{ state_attr("media_player.audio_direct", "media_duration") - 1 }} 
+                        {% endif %}
 
 button:
   - platform: restart
@@ -360,22 +402,37 @@ sensor:
       mode:
         input: true
         pullup: true
+    publish_initial_value: true
     on_clockwise:
-      - homeassistant.service:
-          service: media_player.volume_up
-          data:
-            entity_id: media_player.audio
+      then:
+        - if:
+            condition:
+              lambda: 'return id(screen).get_active_page() == id(playlistSelectionPage);'
+            then:
+              - lambda: 'if (id(playlists).size() > 0) id(selected_playlist) = (id(selected_playlist) + 1) % id(playlists).size();'
+            else:
+              - homeassistant.action:
+                  action: media_player.volume_up
+                  data:
+                    entity_id: media_player.audio # Only adjust volume via the Music Assistant Integration provided player since it offers finer grain control compared to the Google Cast Integration provided player. 
     on_anticlockwise:
-      - homeassistant.service:
-          service: media_player.volume_down
-          data:
-            entity_id: media_player.audio
+      then:
+        - if:
+            condition:
+              lambda: 'return id(screen).get_active_page() == id(playlistSelectionPage);'
+            then:
+              - lambda: 'if (id(playlists).size() > 0) id(selected_playlist) = (id(selected_playlist) - 1 + id(playlists).size()) % id(playlists).size();'
+            else:
+              - homeassistant.action:
+                  action: media_player.volume_down
+                  data:
+                    entity_id: media_player.audio # Only adjust volume via the Music Assistant Integration provided player since it offers finer grain control compared to the Google Cast Integration provided player. 
     filters:
       - debounce: 10ms
     internal: true
   - platform: wifi_signal
     name: "${friendly_name} WiFi signal"
-    id: "${device_name}_wifi_signal"
+    id: emr_wifi_signal
     update_interval: 60s
     icon: mdi:broadcast
   - platform: homeassistant
@@ -388,20 +445,62 @@ sensor:
 text_sensor:
   - platform: homeassistant
     id: media_title
-    entity_id: media_player.audio_direct
+    entity_id: media_player.audio_direct # Fetch the current media title directly from the Google Cast Integration provided player as it works regardless of media source.
     attribute: media_title
     internal: true
   - platform: homeassistant
     id: media_artist
-    entity_id: media_player.audio_direct
+    entity_id: media_player.audio_direct # Fetch the current media artist directly from the Google Cast Integration provided player as it works regardless of media source.
     attribute: media_artist
     internal: true
   - platform: homeassistant
     id: media_status
-    entity_id: media_player.audio_direct
+    entity_id: media_player.audio_direct # Fetch the current media status directly from the Google Cast Integration provided player as it works regardless of media source.
     internal: true
   - platform: homeassistant
     id: media_source
-    entity_id: media_player.audio_direct
+    entity_id: media_player.audio_direct # Fetch the current media source directly from the Google Cast Integration provided player as it works regardless of media source.
     attribute: app_name
     internal: true
+  - platform: homeassistant
+    id: playlists_string
+    entity_id: sensor.ma_library # This is a template sensor in HA that executes Music Assistant's "Get library items" action and stores the returned playlist names into a comma separated string as an attribute of the sensor.
+                                 # This is required for playlist selection because:
+                                 # 1. ESPHome doesn't support HA action response data
+                                 # 2. HA attributes have no character limit (as opposed to state which has a 255 character limit)
+                                 
+                                 # See the Home Assistant template sensor YAML below:
+                                 # template:
+                                 #   - trigger:
+                                 #       - trigger: time_pattern
+                                 #         hours: 0 # Update the playlist list once daily
+                                 #       - platform: state
+                                 #         entity_id: input_button.manually_refresh_music_assistant_library # Trigger: Manual update using the input button
+                                 #     action:
+                                 #       - action: music_assistant.get_library
+                                 #         data:
+                                 #           media_type: playlist
+                                 #         response_variable: playlists_data
+                                 #     sensor:
+                                 #       - unique_id: ma_library
+                                 #         name: ma_library
+                                 #         state: "{{ now().isoformat() }}"
+                                 #         attributes: 
+                                 #           playlist_count: "{{ playlists_data['playlists'] | length }}"
+                                 #           playlists: >
+                                 #             {% if playlists_data is defined and playlists_data['playlists'] %}
+                                 #               {% set ns = namespace(playlist_names="") %}
+                                 #               {% for playlist in playlists_data['playlists'] %}
+                                 #                 {% set ns.playlist_names = ns.playlist_names ~ playlist['name'] ~ ',' %}
+                                 #               {% endfor %}
+                                 #               {% if ns.playlist_names.endswith(',') %}
+                                 #                 {% set ns.playlist_names = ns.playlist_names[:-1] %}
+                                 #               {% endif %}
+                                 #               {{ ns.playlist_names }}
+                                 #             {% else %} No playlists available
+                                 #             {% endif %}
+    attribute: "playlists"
+    internal: true
+    on_value:
+      then:
+        - lambda: 'load_playlist_sensor_data(x.c_str());'
