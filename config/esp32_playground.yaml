@@ -1,0 +1,114 @@
+substitutions:
+  device_name: ep
+  device_description: ESP32 Testing Device and Playground
+  friendly_name: ESP Playground
+
+esphome:
+  name: ${device_name}
+  comment: ${device_description}
+  friendly_name: ${friendly_name}
+  min_version: 2024.6.0
+  name_add_mac_suffix: false
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+    version: latest
+
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret encryption_key
+
+# Enable OTA updates
+ota:
+  - platform: esphome
+    id: my_ota
+    password: !secret otapass
+
+# Allow provisioning Wi-Fi via serial
+improv_serial:
+
+wifi:
+  ssid: !secret wifissid
+  password: !secret wifipass
+  fast_connect: true # Don't do a full scan, connect immediately
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "${friendly_name} Fallback Hotspot"
+    password: !secret fallbackpass
+
+captive_portal:
+
+# Sets up Bluetooth LE (Only on ESP32) to allow the user
+# to provision wifi credentials to the device.
+esp32_improv:
+  authorizer: none
+
+web_server:
+  version: 3
+  port: 80
+  auth:
+    username: !secret otauser
+    password: !secret otapass
+
+time:
+  - platform: homeassistant
+    id: esptime
+
+button:
+  - platform: restart
+    name: "Restart ${friendly_name}"
+    icon: mdi:restartlight
+
+sensor:
+  - platform: ntc
+    id: temperature_sensor
+    name: Thermistor
+    icon: mdi:thermometer
+    sensor: resistance_sensor
+    calibration:
+      - 24kOhm -> 6.3°C
+      - 11.68kOhm -> 23.35°C
+      - 3.89kOhm -> 48.3°C
+  - platform: resistance
+    id: resistance_sensor
+    sensor: source_thermistor_sensor
+    configuration: DOWNSTREAM
+    reference_voltage: 3.3V
+    resistor: 10kOhm
+    name: Resistance Sensor
+  - platform: adc
+    id: source_thermistor_sensor
+    pin: GPIO32
+    attenuation: auto
+    update_interval: never
+  - platform: wifi_signal
+    name: "${friendly_name} WiFi signal"
+    id: "${device_name}_wifi_signal"
+    update_interval: 60s
+    icon: mdi:broadcast
+
+switch:
+  - platform: gpio
+    pin: GPIO23
+    id: thermistor_vcc
+    internal: true
+  - platform: gpio
+    pin: GPIO2
+    name: Onboard LED
+    id: onboard_led
+    icon: mdi:led-on
+    restore_mode: DISABLED
+
+# Update thermistor each minute. Thermistor is only powered while reading to prevent self heating.
+interval:
+  - interval: 60s
+    then:
+      - switch.turn_on: thermistor_vcc
+      - component.update: source_thermistor_sensor
+      - switch.turn_off: thermistor_vcc
