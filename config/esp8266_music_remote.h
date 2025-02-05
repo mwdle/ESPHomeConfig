@@ -68,14 +68,30 @@ void render_playlist_selection() {
         if (playlistSize == 0)
             screen->print(64, 24, opensans_12, TextAlign::CENTER, "No Playlists Found");
         else {
-            static int width_threshold = 122;
-            int top_width = 0, selected_width = 0, bottom_width = 0;
+            static int last_selected_width = 0;
+            int selected_width = 0;
             int ignored;
-            static int selected_width_prev = 0;
-            static int selected_scroll_pos = 64;
-            static int selected_scroll_pos_wrapped = 128 + (selected_width / 2);
 
             opensans_12->measure(playlists->value()[selected_playlist->value()], &selected_width, &ignored, &ignored, &ignored);
+
+            static int selected_scroll_pos = 64;
+            static int wrapped_selected_scroll_pos = 102 + (selected_width / 2);
+
+            // If the selected playlist has changed, re-calculate the scroll positions
+            if (selected_width != last_selected_width) {
+                last_selected_width = selected_width;
+                selected_scroll_pos = 64;
+                wrapped_selected_scroll_pos = 102 + (selected_width / 2);
+            }
+
+            // Handle scroll positions
+            if (selected_scroll_pos + (selected_width / 2) < 0) { // Reset the wrap around scroll position if the selected playlist has scrolled off the display
+                selected_scroll_pos = wrapped_selected_scroll_pos;
+                wrapped_selected_scroll_pos = 102 + (selected_width / 2);
+            } else if (selected_scroll_pos < 0 && selected_scroll_pos + (selected_width / 2) < 64) { // If the selected playlist is on the left half of the display, print the wrap around playlist on the right half
+               screen->print(wrapped_selected_scroll_pos, 22, opensans_12, TextAlign::CENTER, playlists->value()[selected_playlist->value()]);
+               wrapped_selected_scroll_pos -= 24;
+            }
 
             if (selected_playlist->value() == 0) {
                 screen->print(selected_scroll_pos, 22, opensans_12, TextAlign::CENTER, playlists->value()[0]);
@@ -93,7 +109,6 @@ void render_playlist_selection() {
             }
             selected_scroll_pos -= 24;
             screen->line((64 - ((selected_width + 4) / 2)), 31, 64 + ((selected_width + 4) / 2), 31); // Underline the selected playlist
-            selected_width_prev = selected_width;
         }
     }
     else {
