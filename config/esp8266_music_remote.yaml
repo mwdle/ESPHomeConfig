@@ -480,17 +480,18 @@ text_sensor:
                                  #       - action: music_assistant.get_library
                                  #         data:
                                  #           media_type: playlist
+                                 #           config_entry_id: "{{ config_entry_id('media_player.audio') }}" # Run the action on the appropriate Music Assistant Integration Instance
                                  #         response_variable: playlists_data
                                  #     sensor:
                                  #       - unique_id: ma_library
                                  #         name: ma_library
                                  #         state: "{{ now().isoformat() }}"
-                                 #         attributes: 
-                                 #           playlist_count: "{{ playlists_data['playlists'] | length }}"
+                                 #         attributes:
+                                 #           playlist_count: "{{ playlists_data['items'] | length }}"
                                  #           playlists: >
-                                 #             {% if playlists_data is defined and playlists_data['playlists'] %}
+                                 #             {% if playlists_data is defined and playlists_data['items'] %}
                                  #               {% set ns = namespace(playlist_names="") %}
-                                 #               {% for playlist in playlists_data['playlists'] %}
+                                 #               {% for playlist in playlists_data['items'] %}
                                  #                 {% set ns.playlist_names = ns.playlist_names ~ playlist['name'] ~ ',' %}
                                  #               {% endfor %}
                                  #               {% if ns.playlist_names.endswith(',') %}
