@@ -1,10 +1,22 @@
 /**
+ * Aligns a given text reset position to an interval of the scroll increment relative to the center of the display.
+ * Given the limited resolution of the scrolling effect (e.g. it moves left at a defined increment each time), this macro ensures that one of the scroll increments will align with the center of the display.
+ */
+#define ALIGN_RESET_POS(reset_pos) reset_pos + (SCROLL_INCREMENT-((reset_pos-HALF_SCREEN_WIDTH)%SCROLL_INCREMENT))
+
+const int SCROLL_RESET_POS = 110;
+const int SCROLL_INCREMENT = 24;
+const int SCREEN_WIDTH = 128;
+const int SCREEN_HEIGHT = 64;
+const int HALF_SCREEN_WIDTH = SCREEN_WIDTH / 2;
+
+/**
  * @file esp8266_music_remote.h
- * @brief ESPHome C++ implementation for theESP8266 Music Remote project to render all display pages, handle playlist management, and more.
+ * @brief ESPHome C++ implementation for the ESP8266 Music Remote project to render all display pages, handle playlist management, and more.
  * @author mwdle
  *
  * This file contains various functions to render and handle all display pages, including the music player, playlist selection, and statistics page. More pages may be implemented in the future.
- * The Music Player page displays the current track title and artist, scrolling them across the screen as needed (a 128x64 display is expected).
+ * The Music Player page displays the current track title and artist, scrolling them across the screen as needed (a 128xHALF_SCREEN_WIDTH display is expected).
  * The playlist selection pages relies on a custom Home Assistant template sensor which allows you to pull playlist names from Music Assistant to show them on the display and allow selecting them for playback.
  * The statistics page shows information about wifi connectivity and signal, and Home Assistant API connectivity status.
  * This file also contains a function to load Music Assistant playlist names into a global vector of c strings using a custom Home Assistant template which allows for viewing and selecting any number of playlists from Music Assistant from within ESPHome.
@@ -26,7 +38,7 @@ void draw_volume() {
  * Takes up the bottom 18 pixels on the display and is meant to be rendered on every display page.
  */
 void render_ui_controls() {
-    screen->line(0, 47, 127, 47); // Horizontal line
+    screen->line(0, 47, (SCREEN_WIDTH - 1), 47); // Horizontal line
     if (screen->get_active_page() == playbackPage)
         screen->print(13, 56, mdi_16, TextAlign::CENTER, "󰀟"); // cast-variant icon
     else if (screen->get_active_page() == playlistSelectionPage)
@@ -35,7 +47,7 @@ void render_ui_controls() {
         screen->print(14, 56, mdi_16, TextAlign::CENTER, "󰋼"); // information icon
     screen->print(38, 56, mdi_21, TextAlign::CENTER, "󰒮"); // skip-previous icon
     if (media_status->state == "playing" || media_status->state == "buffering")
-        screen->print(64, 56, mdi_21, TextAlign::CENTER, "󰏤"); // pause icon
+        screen->print(HALF_SCREEN_WIDTH, 56, mdi_21, TextAlign::CENTER, "󰏤"); // pause icon
     else
         screen->print(63, 56, mdi_21, TextAlign::CENTER, "󰐊"); // play icon
     screen->print(89, 56, mdi_21, TextAlign::CENTER, "󰒭"); // skip-next icon
@@ -66,7 +78,7 @@ void render_playlist_selection() {
     if (global_api_server->is_connected()) {
         auto playlistSize = playlists->value().size();
         if (playlistSize == 0)
-            screen->print(64, 24, opensans_12, TextAlign::CENTER, "No Playlists Found");
+            screen->print(HALF_SCREEN_WIDTH, 24, opensans_12, TextAlign::CENTER, "No Playlists Found");
         else {
             static int last_selected_width = 0;
             int selected_width = 0;
@@ -74,46 +86,47 @@ void render_playlist_selection() {
 
             opensans_12->measure(playlists->value()[selected_playlist->value()], &selected_width, &ignored, &ignored, &ignored);
 
-            static int selected_scroll_pos = 64;
-            static int wrapped_selected_scroll_pos = 102 + (selected_width / 2);
+            static int selected_scroll_pos = HALF_SCREEN_WIDTH;
+            static int wrapped_selected_scroll_pos = ALIGN_RESET_POS(SCROLL_RESET_POS + (selected_width / 2));
 
             // If the selected playlist has changed, re-calculate the scroll positions
             if (selected_width != last_selected_width) {
                 last_selected_width = selected_width;
-                selected_scroll_pos = 64;
-                wrapped_selected_scroll_pos = 102 + (selected_width / 2);
+                selected_scroll_pos = HALF_SCREEN_WIDTH;
+                wrapped_selected_scroll_pos = ALIGN_RESET_POS(SCROLL_RESET_POS + (selected_width / 2));
             }
 
             // Handle scroll positions
             if (selected_scroll_pos + (selected_width / 2) < 0) { // Reset the wrap around scroll position if the selected playlist has scrolled off the display
                 selected_scroll_pos = wrapped_selected_scroll_pos;
-                wrapped_selected_scroll_pos = 102 + (selected_width / 2);
-            } else if (selected_scroll_pos < 0 && selected_scroll_pos + (selected_width / 2) < 64) { // If the selected playlist is on the left half of the display, print the wrap around playlist on the right half
+                wrapped_selected_scroll_pos = ALIGN_RESET_POS(SCROLL_RESET_POS + (selected_width / 2));
+            } else if (selected_scroll_pos < 0 && selected_scroll_pos + (selected_width / 2) < HALF_SCREEN_WIDTH) { // If the selected playlist is on the left half of the display, print the wrap around playlist on the right half
                screen->print(wrapped_selected_scroll_pos, 22, opensans_12, TextAlign::CENTER, playlists->value()[selected_playlist->value()]);
-               wrapped_selected_scroll_pos -= 24;
+               wrapped_selected_scroll_pos -= SCROLL_INCREMENT;
             }
 
+            // Print the playlists. 3 cases: the first playlist is selected, the last playlist is selected, or any playlist inbetween is selected.
             if (selected_playlist->value() == 0) {
                 screen->print(selected_scroll_pos, 22, opensans_12, TextAlign::CENTER, playlists->value()[0]);
                 if (playlistSize > 1)
-                    screen->print(64, 38, opensans_10, TextAlign::CENTER, playlists->value()[1]);
+                    screen->print(HALF_SCREEN_WIDTH, 38, opensans_10, TextAlign::CENTER, playlists->value()[1]);
             }
             else if (selected_playlist->value() == playlistSize - 1) {
-                screen->print(64, 8, opensans_10, TextAlign::CENTER, playlists->value()[playlistSize - 2]); 
+                screen->print(HALF_SCREEN_WIDTH, 8, opensans_10, TextAlign::CENTER, playlists->value()[playlistSize - 2]); 
                 screen->print(selected_scroll_pos, 22, opensans_12, TextAlign::CENTER, playlists->value()[playlistSize - 1]);
             }
             else {
-                screen->print(64, 8, opensans_10, TextAlign::CENTER, playlists->value()[selected_playlist->value() - 1]);
+                screen->print(HALF_SCREEN_WIDTH, 8, opensans_10, TextAlign::CENTER, playlists->value()[selected_playlist->value() - 1]);
                 screen->print(selected_scroll_pos, 22, opensans_12, TextAlign::CENTER, playlists->value()[selected_playlist->value()]);
-                screen->print(64, 38, opensans_10, TextAlign::CENTER, playlists->value()[selected_playlist->value() + 1]);
+                screen->print(HALF_SCREEN_WIDTH, 38, opensans_10, TextAlign::CENTER, playlists->value()[selected_playlist->value() + 1]);
             }
-            selected_scroll_pos -= 24;
-            screen->line((64 - ((selected_width + 4) / 2)), 31, 64 + ((selected_width + 4) / 2), 31); // Underline the selected playlist
+            selected_scroll_pos -= SCROLL_INCREMENT;
+            screen->line((HALF_SCREEN_WIDTH - ((selected_width + 4) / 2)), 31, HALF_SCREEN_WIDTH + ((selected_width + 4) / 2), 31); // Underline the selected playlist
         }
     }
     else {
-        screen->print(64, 15, opensans_12, TextAlign::CENTER, "Music Assistant");
-        screen->print(64, 30, opensans_12, TextAlign::CENTER, "is not connected!");
+        screen->print(HALF_SCREEN_WIDTH, 15, opensans_12, TextAlign::CENTER, "Music Assistant");
+        screen->print(HALF_SCREEN_WIDTH, 30, opensans_12, TextAlign::CENTER, "is not connected!");
     }
 }
 
@@ -124,14 +137,13 @@ void render_playlist_selection() {
 void scroll_media_title_only(int* title_scroll_pos, int* wrapped_title_scroll_pos, int half_title_width, const char* title, const char* artist) {
     if (*title_scroll_pos + half_title_width < 0) { // Reset the wrap around scroll position if the title has scrolled off the display
         *title_scroll_pos = *wrapped_title_scroll_pos;
-        *wrapped_title_scroll_pos = 120 + half_title_width;
-    } else if (*title_scroll_pos + half_title_width < 64) { // If the title is on the left half of the display, print the wrap around title on the right half
+        *wrapped_title_scroll_pos = ALIGN_RESET_POS(SCROLL_RESET_POS + half_title_width);
+    } else if (*title_scroll_pos + half_title_width < HALF_SCREEN_WIDTH) { // If the title is on the left half of the display, print the wrap around title on the right half
         screen->print(*wrapped_title_scroll_pos, 10, opensans_12, TextAlign::CENTER, title);
-        *wrapped_title_scroll_pos -= 24;
+        *wrapped_title_scroll_pos -= SCROLL_INCREMENT;
     }
     screen->print(*title_scroll_pos, 10, opensans_12, TextAlign::CENTER, title);
-    screen->print(64, 24, opensans_12, TextAlign::CENTER, artist);
-    *title_scroll_pos -= 24;
+    screen->print(HALF_SCREEN_WIDTH, 24, opensans_12, TextAlign::CENTER, artist);
 }
 
 /**
@@ -141,14 +153,13 @@ void scroll_media_title_only(int* title_scroll_pos, int* wrapped_title_scroll_po
 void scroll_media_artist_only(int* artist_scroll_pos, int* wrapped_artist_scroll_pos, int half_artist_width, const char* title, const char* artist) {
     if (*artist_scroll_pos + half_artist_width < 0) { // Reset the wrap around scroll position if the artist has scrolled off the display
         *artist_scroll_pos = *wrapped_artist_scroll_pos;
-        *wrapped_artist_scroll_pos = 120 + half_artist_width;
-    } else if (*artist_scroll_pos + half_artist_width < 64) { // If the artist is on the left half of the display, print the wrap around artist on the right half
+        *wrapped_artist_scroll_pos = ALIGN_RESET_POS(SCROLL_RESET_POS + half_artist_width);
+    } else if (*artist_scroll_pos + half_artist_width < HALF_SCREEN_WIDTH) { // If the artist is on the left half of the display, print the wrap around artist on the right half
         screen->print(*wrapped_artist_scroll_pos, 24, opensans_12, TextAlign::CENTER, artist);
-        *wrapped_artist_scroll_pos -= 24;
+        *wrapped_artist_scroll_pos -= SCROLL_INCREMENT;
     }
     screen->print(*artist_scroll_pos, 24, opensans_12, TextAlign::CENTER, artist);
-    screen->print(64, 10, opensans_12, TextAlign::CENTER, title);
-    *artist_scroll_pos -= 24;
+    screen->print(HALF_SCREEN_WIDTH, 10, opensans_12, TextAlign::CENTER, title);
 }
 
 /**
@@ -160,32 +171,30 @@ void scroll_media_artist_and_title(bool titleWidthGreaterThanArtist, int* title_
         if (*title_scroll_pos + half_title_width < 0) { // Reset the wrap around scroll positions if the title has scrolled off the display
             *title_scroll_pos = *wrapped_title_scroll_pos;
             *artist_scroll_pos = *wrapped_artist_scroll_pos;
-            *wrapped_title_scroll_pos = 120 + half_title_width;
-            *wrapped_artist_scroll_pos = 120 + half_title_width;
-        } else if (*title_scroll_pos + half_title_width < 64) { // If the title is on the left half of the display, print the wrap around title and artist on the right half
+            *wrapped_title_scroll_pos = ALIGN_RESET_POS(SCROLL_RESET_POS + half_title_width);
+            *wrapped_artist_scroll_pos = ALIGN_RESET_POS(SCROLL_RESET_POS + half_title_width);
+        } else if (*title_scroll_pos + half_title_width < HALF_SCREEN_WIDTH) { // If the title is on the left half of the display, print the wrap around title and artist on the right half
             screen->print(*wrapped_title_scroll_pos, 10, opensans_12, TextAlign::CENTER, title);
             screen->print(*wrapped_artist_scroll_pos, 24, opensans_12, TextAlign::CENTER, artist);
-            *wrapped_title_scroll_pos -= 24;
-            *wrapped_artist_scroll_pos -= 24;
+            *wrapped_title_scroll_pos -= SCROLL_INCREMENT;
+            *wrapped_artist_scroll_pos -= SCROLL_INCREMENT;
         }
     }
     else {
         if (*artist_scroll_pos + half_artist_width < 0) { // Reset the wrap around scroll positions if the artist has scrolled off the display
             *artist_scroll_pos = *wrapped_artist_scroll_pos;
             *title_scroll_pos = *wrapped_title_scroll_pos;
-            *wrapped_artist_scroll_pos = 120 + half_artist_width;
-            *wrapped_title_scroll_pos = 120 + half_artist_width;
-        } else if (*artist_scroll_pos + half_artist_width < 64) { // If the artist is on the left half of the display, print the wrap around artist and title on the right half
+            *wrapped_artist_scroll_pos = ALIGN_RESET_POS(SCROLL_RESET_POS + half_artist_width);
+            *wrapped_title_scroll_pos = ALIGN_RESET_POS(SCROLL_RESET_POS + half_artist_width);
+        } else if (*artist_scroll_pos + half_artist_width < HALF_SCREEN_WIDTH) { // If the artist is on the left half of the display, print the wrap around artist and title on the right half
             screen->print(*wrapped_artist_scroll_pos, 24, opensans_12, TextAlign::CENTER, artist);
             screen->print(*wrapped_title_scroll_pos, 10, opensans_12, TextAlign::CENTER, title);
-            *wrapped_artist_scroll_pos -= 24;
-            *wrapped_title_scroll_pos -= 24;
+            *wrapped_artist_scroll_pos -= SCROLL_INCREMENT;
+            *wrapped_title_scroll_pos -= SCROLL_INCREMENT;
         }
     }
     screen->print(*title_scroll_pos, 10, opensans_12, TextAlign::CENTER, title);
     screen->print(*artist_scroll_pos, 24, opensans_12, TextAlign::CENTER, artist);
-    *title_scroll_pos -= 24;
-    *artist_scroll_pos -= 24;
 }
 
 void render_active_media() {
@@ -193,7 +202,7 @@ void render_active_media() {
     const char* artist = media_artist->state.c_str();
 
     if (global_api_server->is_connected() && title[0] != '\0') {
-        static int width_threshold = 122;
+        static int width_threshold = SCROLL_RESET_POS + 2;
         static int last_title_width = 0;
         static int last_artist_width = 0;
 
@@ -203,8 +212,8 @@ void render_active_media() {
         static int half_title_width = title_width / 2;
         static int half_artist_width = artist_width / 2;
 
-        static int title_scroll_pos = 64, wrapped_title_scroll_pos = 120 + (title_width >= artist_width ? half_title_width : half_artist_width);
-        static int artist_scroll_pos = 64, wrapped_artist_scroll_pos = 120 + (artist_width > title_width ? half_artist_width : half_title_width);
+        static int title_scroll_pos = HALF_SCREEN_WIDTH, wrapped_title_scroll_pos = ALIGN_RESET_POS(SCROLL_RESET_POS + (title_width >= artist_width ? half_title_width : half_artist_width));
+        static int artist_scroll_pos = HALF_SCREEN_WIDTH, wrapped_artist_scroll_pos = ALIGN_RESET_POS(SCROLL_RESET_POS + (artist_width > title_width ? half_artist_width : half_title_width));
 
         // If the track changed, recalculate the starting positions
         if (title_width != last_title_width || artist_width != last_artist_width) {
@@ -212,14 +221,14 @@ void render_active_media() {
             last_artist_width = artist_width;
             half_title_width = title_width / 2;
             half_artist_width = artist_width / 2;
-            title_scroll_pos = 64, wrapped_title_scroll_pos = 120 + (title_width >= artist_width ? half_title_width : half_artist_width);
-            artist_scroll_pos = 64, wrapped_artist_scroll_pos = 120 + (artist_width > title_width ? half_artist_width : half_title_width);
+            title_scroll_pos = HALF_SCREEN_WIDTH, wrapped_title_scroll_pos = ALIGN_RESET_POS(SCROLL_RESET_POS + (title_width >= artist_width ? half_title_width : half_artist_width));
+            artist_scroll_pos = HALF_SCREEN_WIDTH, wrapped_artist_scroll_pos = ALIGN_RESET_POS(SCROLL_RESET_POS + (artist_width > title_width ? half_artist_width : half_title_width));
         }
 
         // If title and artist fit comfortably on the display, center both.
         if (title_width < width_threshold && artist_width < width_threshold) {
-            screen->print(64, 10, opensans_12, TextAlign::CENTER, title);
-            screen->print(64, 24, opensans_12, TextAlign::CENTER, artist);
+            screen->print(HALF_SCREEN_WIDTH, 10, opensans_12, TextAlign::CENTER, title);
+            screen->print(HALF_SCREEN_WIDTH, 24, opensans_12, TextAlign::CENTER, artist);
         }
         // If the title does not fit comfortably on the display but the artist does, scroll the title text, and center the artist.
         else if (title_width >= width_threshold && artist_width < width_threshold)
@@ -231,12 +240,15 @@ void render_active_media() {
         else if (artist_width >= width_threshold && title_width >= width_threshold)
             scroll_media_artist_and_title((title_width >= artist_width), &title_scroll_pos, &wrapped_title_scroll_pos, half_title_width, &artist_scroll_pos, &wrapped_artist_scroll_pos, half_artist_width, title, artist);
 
+        title_scroll_pos -= SCROLL_INCREMENT;
+        artist_scroll_pos -= SCROLL_INCREMENT;
+
         // Draw Volume Bar:
         draw_volume();
     } 
     else {
-        screen->print(64, 15, opensans_12, TextAlign::CENTER, "Player is idle");
-        screen->print(64, 30, opensans_12, TextAlign::CENTER, "or disconnected!");
+        screen->print(HALF_SCREEN_WIDTH, 15, opensans_12, TextAlign::CENTER, "Player is idle");
+        screen->print(HALF_SCREEN_WIDTH, 30, opensans_12, TextAlign::CENTER, "or disconnected!");
     }
 }
 
