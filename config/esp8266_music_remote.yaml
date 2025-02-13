@@ -122,7 +122,7 @@ i2c:
   sda: D7
   scl: D6
   scan: true
-  frequency: 800kHz # Setting to default of 50khz breaks Wi-Fi for whatever reason... Either way, setting it higher results in faster display updates, less delays from blocking display operations, and provides a smoother experience overall.
+  frequency: 400khz # Setting to default of 50khz breaks Wi-Fi for whatever reason... Either way, setting it higher results in faster display updates, less delays from blocking display operations, and provides a smoother experience overall.
 
 time:
   - platform: homeassistant
@@ -151,6 +151,7 @@ display:
     address: 0x3C
     rotation: 180°
     contrast: 0% # Use the lowest "brightness" to save battery life
+    update_interval: 42ms # ~24fps
     pages:
       - id: playbackPage
         lambda: |-
