@@ -150,7 +150,7 @@ display:
     model: "SSD1306 128x64"
     address: 0x3C
     rotation: 180°
-    contrast: 0% # Use the lowest "brightness" to save battery life
+    contrast: 0% # Use the lowest "brightness" to save battery life (ESPHome brightness attribute doesn't work for SSD1306)
     update_interval: 42ms # ~24fps
     pages:
       - id: playbackPage

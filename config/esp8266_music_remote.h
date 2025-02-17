@@ -38,7 +38,7 @@ void draw_volume() {
  * Takes up the bottom 18 pixels on the display and is meant to be rendered on every display page.
  */
 void render_ui_controls() {
-    screen->line(0, 47, (SCREEN_WIDTH - 1), 47); // Horizontal line
+    screen->line(0, (SCREEN_HEIGHT * 0.73), (SCREEN_WIDTH - 1), (SCREEN_HEIGHT * 0.73)); // Horizontal line
     if (screen->get_active_page() == playbackPage)
         screen->print(13, 56, mdi_16, TextAlign::CENTER, "󰀟"); // cast-variant icon
     else if (screen->get_active_page() == playlistSelectionPage)
@@ -197,6 +197,14 @@ void scroll_media_artist_and_title(bool titleWidthGreaterThanArtist, int* title_
     screen->print(*artist_pos, 24, opensans_12, TextAlign::CENTER, artist);
 }
 
+/**
+ * @brief Renders the currently playing media title and artist on the display.
+ * If the title does not fit comfortably on the display but the artist does, scrolls the title text and centers the artist.
+ * If the artist does not fit comfortably on the display but the title does, scrolls the artist text and centers the title.
+ * If neither the title nor artist fit comfortably on the display, scrolls both.
+ * If both the title and artist fit comfortably on the display, centers both.
+ * If the player is idle or disconnected, prints a message on the display.
+ */
 void render_active_media() {
     const char* title = media_title->state.c_str();
     const char* artist = media_artist->state.c_str();
