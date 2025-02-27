@@ -5,7 +5,6 @@ esphome:
 
 esp8266:
   board: esp01_1m
-  restore_from_flash: true
 
 wifi:
   ssid: !secret wifissid
@@ -720,7 +719,7 @@ light:
   - platform: rgb
     name: ${friendly_name}
     id: ${device_name}
-    restore_mode: RESTORE_DEFAULT_OFF
+    restore_mode: ALWAYS_OFF
     red: red_channel
     green: green_channel
     blue: blue_channel
