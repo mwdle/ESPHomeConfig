@@ -4,3 +4,4 @@ config/.gitignore
 .vscode/
 tasmotizer.cfg
 .pio/
+.env
