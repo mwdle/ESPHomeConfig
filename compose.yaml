@@ -5,7 +5,7 @@ services:
     networks:
       - AAA_LAN
     volumes:
-      - ${PWD}/config:/config
+      - ./config:/config
       - ${DOCKER_VOLUMES}/ESPHome/.esphome:/config/.esphome # Put build directory outside of the project folder.
       - /etc/localtime:/etc/localtime:ro
     restart: no
