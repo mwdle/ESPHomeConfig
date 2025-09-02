@@ -1,4 +1,4 @@
-nane: ESPHome
+name: ESPHome
 services:
   ESPHome:
     container_name: ESPHome
