@@ -1,6 +1,7 @@
+nane: ESPHome
 services:
-  esphome:
-    container_name: esphome
+  ESPHome:
+    container_name: ESPHome
     image: ghcr.io/esphome/esphome
     networks:
       - AAA_LAN
