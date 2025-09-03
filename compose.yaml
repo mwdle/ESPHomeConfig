@@ -2,6 +2,7 @@ name: ESPHome
 services:
   ESPHome:
     container_name: ESPHome
+    hostname: esphome
     image: ghcr.io/esphome/esphome
     networks:
       - AAA_LAN
