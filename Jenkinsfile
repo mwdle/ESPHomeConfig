@@ -1,17 +1,20 @@
 @Library("JenkinsPipelines") _
 
 /*
- * This pipeline uses the 'dockerComposePipeline' to manage the deployment of this Docker Compose application.
+ * This Docker Compose deployment is managed by the `dockerComposePipeline` defined in the
+ * Jenkins Pipelines shared library (https://github.com/mwdle/JenkinsPipelines).
  *
  * Configuration:
- * - defaultBitwardenEnabled: true
- * Enables Bitwarden integration by default, pulling a .env file from a secure note with the same name as this repository.
+ * - envFileCredentialIds:
+ * Injects secrets from a Jenkins 'Secret file' credential. It expects the credential ID 
+ * to match the name of this repository, suffixed with '.env'.
+ *
+ * - persistentWorkspace:
+ * Deploys to a stable directory on the host to preserve data between builds. The path is
+ * dynamically set using the DOCKER_VOLUMES environment variable.
  *
  * - disableTriggers: true
- * Disables automatic builds from webhooks or SCM scans. This job will only run when manually triggered.
- *
- * Requirements:
- * - JenkinsPipelines Library: https://github.com/mwdle/JenkinsPipelines
- * - JenkinsBitwardenUtils Library (for Bitwarden integration): https://github.com/mwdle/JenkinsBitwardenUtils
+ * Disables automatic builds from webhooks or SCM scans. This job will only run when
+ * manually triggered.
  */
-dockerComposePipeline(defaultBitwardenEnabled: true, disableTriggers: true)
+dockerComposePipeline(envFileCredentialIds: [env.JOB_NAME.split('/')[1] + ".env"], persistentWorkspace: "${env.DOCKER_VOLUMES}/deployments", disableTriggers: true)
