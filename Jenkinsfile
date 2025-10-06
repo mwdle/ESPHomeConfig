@@ -17,4 +17,4 @@
  * Disables automatic builds from webhooks or SCM scans. This job will only run when
  * manually triggered.
  */
-dockerComposePipeline(envFileCredentialIds: [env.JOB_NAME.split('/')[1] + ".env"], persistentWorkspace: "${env.DOCKER_VOLUMES}/deployments", disableTriggers: true)
+dockerComposePipeline(envFileCredentialIds: [env.JOB_NAME.split('/')[1] + ".env"], persistentWorkspace: "/home/mwdle/docker/deployments", disableTriggers: true)
