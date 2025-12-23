@@ -59,6 +59,7 @@ Configurations and flashing instructions for my ESPHome converted Gosund, Sonoff
 
    ```shell
    docker network create -d macvlan --subnet=192.168.0.0/24 --gateway=192.168.0.1 -o parent=eno1 AAA_LAN
+   docker network create --subnet 172.16.1.0/24 --gateway 172.16.1.1 ESPHome
    ```
 
    - Ensure the gateway and subnet match your LAN network.

@@ -6,6 +6,7 @@ services:
     image: ghcr.io/esphome/esphome
     networks:
       - AAA_LAN
+      - ESPHome
     volumes:
       - ./config:/config
       - ${DOCKER_VOLUMES}/ESPHome/.esphome:/config/.esphome # Put build directory outside of the project folder.
@@ -13,6 +14,9 @@ services:
     restart: no
 
 networks:
+  ESPHome:
+    name: ESPHome
+    external: true
   AAA_LAN:
     name: AAA_LAN
     external: true
