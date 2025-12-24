@@ -41,6 +41,7 @@ Configurations and flashing instructions for my ESPHome converted Gosund, Sonoff
 
    ```properties
    DOCKER_VOLUMES=<PATH_TO_DOCKER_VOLUMES_FOLDER> # The folder created in the previous step.
+   TZ=<YOUR_TIMEZONE_HERE> # e.g. `America/Denver`
    ```
 
 4. Create a file called secrets.yaml in the "config" of this project containing the following properties:
@@ -55,7 +56,7 @@ Configurations and flashing instructions for my ESPHome converted Gosund, Sonoff
    ```
 
 5. Open a terminal in the directory containing the docker-compose file.
-6. Create docker macvlan network for the container
+6. Create docker macvlan and bridge network for the container.
 
    ```shell
    docker network create -d macvlan --subnet=192.168.0.0/24 --gateway=192.168.0.1 -o parent=eno1 AAA_LAN
@@ -72,7 +73,7 @@ Configurations and flashing instructions for my ESPHome converted Gosund, Sonoff
    docker compose up -d
    ```
 
-Your container should be up and running and you should be able to execute ESPHome commands via `docker exec` like so:
+Your container should be up and running and you should be able to connect to the ESPHome web interface and also execute ESPHome commands via `docker exec` like so:
 
 ```shell
 docker exec -it esphome esphome run YOUR_CONFIG.yaml

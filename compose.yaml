@@ -5,12 +5,15 @@ services:
     hostname: esphome
     image: ghcr.io/esphome/esphome
     networks:
-      - AAA_LAN
-      - ESPHome
+      AAA_LAN:
+        mac_address: 0A:00:00:00:00:03 # Set static LAN MAC address for container (e.g. MAC address used in `AAA_LAN` MacVLAN network persists between container stops/starts)
+      ESPHome:
     volumes:
       - ./config:/config
       - ${DOCKER_VOLUMES}/ESPHome/.esphome:/config/.esphome # Put build directory outside of the project folder.
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      - TZ=${TZ}
     restart: no
 
 networks:
