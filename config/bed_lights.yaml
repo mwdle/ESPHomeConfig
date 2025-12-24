@@ -1,6 +1,7 @@
-<<: !include magichome_ledstrip_common.yaml
+packages:
+  - !include common/magichome_rgb_led_controller.yaml
 
 substitutions:
   device_name: mh2
-  device_description: Magic Home Wifi ZJ-WFMN-A V1.1 | LED Controller
+  device_description: Magic Home Wifi ZJ-WFMN-A V1.1 RGB LED Controller
   friendly_name: Bed Lights

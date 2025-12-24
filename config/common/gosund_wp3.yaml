@@ -1,0 +1,51 @@
+packages:
+  - !include components/base.yaml
+  - !include components/ha_api_secure.yaml
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  comment: Gosund WP3 Smart Plug
+
+esp8266:
+  board: esp01_1m
+  restore_from_flash: true
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO4
+      mode: INPUT_PULLUP
+      inverted: True
+    name: Button
+    icon: mdi:power-standby
+    id: button
+    on_press:
+      - switch.toggle: relay
+  - platform: status
+    name: Status
+    icon: mdi:power-standby
+    id: status
+
+switch:
+  - platform: gpio
+    name: Relay
+    icon: mdi:power-socket-us
+    id: relay
+    restore_mode: RESTORE_DEFAULT_OFF
+    pin: GPIO14
+    on_turn_on:
+      - output.turn_on: led
+    on_turn_off:
+      - output.turn_off: led
+
+status_led:
+  pin:
+    number: GPIO12
+    inverted: yes
+
+output:
+  - platform: gpio
+    pin: GPIO13
+    inverted: false # Not inverted (light will be off when device is on)
+    id: led

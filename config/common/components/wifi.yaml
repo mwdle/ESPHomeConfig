@@ -1,0 +1,29 @@
+wifi:
+  ssid: !secret wifissid
+  password: !secret wifipass
+  fast_connect: true # Don't do a full scan, connect immediately
+  min_auth_mode: WPA2
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    password: !secret fallbackpass
+
+captive_portal:
+
+sensor:
+  - platform: wifi_signal
+    name: WiFi Signal
+    update_interval: 60s
+    icon: mdi:broadcast
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: IP Address
+      icon: mdi:ip-network
+    ssid:
+      name: Connected SSID
+      icon: mdi:wifi-star
+    mac_address:
+      name: Mac Wifi Address
+      icon: mdi:router-network-wireless

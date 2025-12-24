@@ -1,54 +1,19 @@
-# See the README instructions for using this common configuration
+packages:
+  - !include components/base.yaml
+  # HA secure API is too resource intensive for the ESP8285 based MagicHome boards
+  - !include components/ha_api_basic.yaml
+
 esphome:
   name: ${device_name}
+  friendly_name: ${friendly_name}
   comment: ${device_description}
 
 esp8266:
   board: esp01_1m
 
-wifi:
-  ssid: !secret wifissid
-  password: !secret wifipass
-  fast_connect: true # Don't do a full scan, connect immediately
-
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: "${friendly_name} Fallback Hotspot"
-    password: !secret fallbackpass
-
-captive_portal:
-
-# Disable logging because it causes crashes due to excessive logging when some custom light effects are enabled
-# logger:
-#   baud_rate: 0 #disable UART logging
-
-# Enable Home Assistant API
-# Disable encryption for better performance / less memory / less unexpected crashing (the ESP8285 based MagicHome boards don't seem powerful enough to reliably handle encryption)
-api:
-  # encryption:
-  #   key: !secret encryption_key
-
-# Enable OTA updates
-ota:
-  - platform: esphome
-    id: my_ota
-    password: !secret otapass
-
-# Disable web server to save memory and reduce unexpected crashes and resets
-# web_server:
-#   version: 3
-#   port: 80
-#   auth:
-#     username: !secret otauser
-#     password: !secret otapass
-
-time:
-  - platform: homeassistant
-    id: esptime
-
 remote_receiver:
   pin: GPIO4
-#  dump: raw #Comment out if you aren't debugging IR codes
+  # dump: raw # Comment out if you aren't debugging IR codes
 
 output:
   - platform: esp8266_pwm
@@ -60,6 +25,69 @@ output:
   - platform: esp8266_pwm
     id: blue_channel
     pin: GPIO13
+
+globals:
+  - id: hue
+    type: int
+    initial_value: "0"
+
+light:
+  - platform: rgb
+    name: Controller
+    id: leds
+    restore_mode: ALWAYS_OFF
+    red: red_channel
+    green: green_channel
+    blue: blue_channel
+    on_turn_on:
+      - light.turn_on:
+          id: leds
+          effect: Color Loop
+          brightness: 100%
+    effects:
+      - lambda:
+          name: Color Loop
+          update_interval: 100ms
+          lambda: |-
+            id(hue) += 1;
+            if (id(hue) >= 360) {
+              id(hue) = 0;
+            }
+            float r, g, b;
+            hsv_to_rgb(id(hue), 1.0, 1.0, r, g, b);
+            auto call = id(leds).turn_on();
+            call.set_transition_length(130);
+            call.set_rgb(r,g,b);
+            call.perform();
+
+sensor:
+  # Sensor for light effect synchronization using Home Assistant automations
+  - platform: template
+    name: Color Loop Hue
+    id: leds_color_loop_hue
+    update_interval: 2s
+    unit_of_measurement: ""
+    icon: "mdi:palette"
+    accuracy_decimals: 0
+    lambda: "return id(hue);"
+
+button:
+  # Button that enables light effect synchronization using Home Assistant automations
+  - platform: template
+    name: Decrement Color Loop Hue
+    id: leds_decrement_hue
+    icon: "mdi:led-strip-variant"
+    on_press:
+      then:
+        - lambda: "id(hue) = (id(hue) - 1 < 0) ? 359 : id(hue) - 1;"
+    # Button that enables light effect synchronization using Home Assistant automations
+  - platform: template
+    name: Increment Color Loop Hue
+    id: leds_increment_hue
+    icon: "mdi:led-strip-variant"
+    on_press:
+      then:
+        - lambda: "id(hue) = (id(hue) + 1 >= 360) ? 0 : id(hue) + 1;"
 
 binary_sensor:
   - platform: remote_receiver
@@ -138,7 +166,7 @@ binary_sensor:
         ]
     on_press:
       then:
-        - light.turn_on: ${device_name}
+        - light.turn_on: leds
 
   - platform: remote_receiver
     name: "Remote OFF"
@@ -216,7 +244,7 @@ binary_sensor:
         ]
     on_press:
       then:
-        - light.turn_off: ${device_name}
+        - light.turn_off: leds
 
   - platform: remote_receiver
     name: "Remote BRIGHTUP"
@@ -295,7 +323,7 @@ binary_sensor:
     on_press:
       then:
         - light.dim_relative:
-            id: ${device_name}
+            id: leds
             relative_brightness: 5%
 
   - platform: remote_receiver
@@ -375,7 +403,7 @@ binary_sensor:
     on_press:
       then:
         - light.dim_relative:
-            id: ${device_name}
+            id: leds
             relative_brightness: -5%
 
   - platform: remote_receiver
@@ -455,7 +483,7 @@ binary_sensor:
     on_press:
       then:
         - light.turn_on:
-            id: ${device_name}
+            id: leds
             red: 100%
             green: 0%
             blue: 0%
@@ -538,7 +566,7 @@ binary_sensor:
     on_press:
       then:
         - light.turn_on:
-            id: ${device_name}
+            id: leds
             red: 0%
             green: 100%
             blue: 0%
@@ -621,7 +649,7 @@ binary_sensor:
     on_press:
       then:
         - light.turn_on:
-            id: ${device_name}
+            id: leds
             red: 0%
             green: 0%
             blue: 100%
@@ -704,135 +732,8 @@ binary_sensor:
     on_press:
       then:
         - light.turn_on:
-            id: ${device_name}
+            id: leds
             red: 100%
             green: 100%
             blue: 100%
             effect: None
-
-globals:
-  - id: hue
-    type: int
-    initial_value: "0"
-
-light:
-  - platform: rgb
-    name: ${friendly_name}
-    id: ${device_name}
-    restore_mode: ALWAYS_OFF
-    red: red_channel
-    green: green_channel
-    blue: blue_channel
-    on_turn_on:
-      - light.turn_on:
-          id: ${device_name}
-          effect: Color Loop
-          brightness: 100%
-    effects:
-      - lambda:
-          name: Color Loop
-          update_interval: 100ms
-          lambda: |-
-            id(hue) += 1;
-            if (id(hue) >= 360) {
-              id(hue) = 0;
-            }
-            float r, g, b;
-            hsv_to_rgb(id(hue), 1.0, 1.0, r, g, b);
-            auto call = id(${device_name}).turn_on();
-            call.set_transition_length(130);
-            call.set_rgb(r,g,b);
-            call.perform();
-      - strobe:
-          name: "Multicolor Strobe"
-          colors:
-            - state: True
-              brightness: 100%
-              red: 100%
-              green: 100%
-              blue: 100%
-              duration: 5ms
-            - state: False
-              duration: 95ms
-            - state: True
-              brightness: 100%
-              red: 100%
-              green: 0%
-              blue: 0%
-              duration: 5ms
-            - state: False
-              duration: 95ms
-            - state: True
-              brightness: 100%
-              red: 0%
-              green: 100%
-              blue: 0%
-              duration: 5ms
-            - state: False
-              duration: 95ms
-            - state: True
-              brightness: 100%
-              red: 0%
-              green: 0%
-              blue: 100%
-              duration: 5ms
-            - state: False
-              duration: 95ms
-
-sensor:
-  - platform: wifi_signal
-    name: "${friendly_name} WiFi signal"
-    id: "${device_name}_wifi_signal"
-    update_interval: 60s
-    icon: mdi:broadcast
-  - platform: uptime
-    name: "${friendly_name} Uptime"
-    id: "${device_name}_uptime"
-    update_interval: 60s
-    icon: mdi:timer-outline
-    # Sensor for light effect synchronization using Home Assistant automations
-  - platform: template
-    name: ${friendly_name} Color Loop Hue
-    id: ${device_name}_color_loop_hue
-    update_interval: 2s
-    unit_of_measurement: ""
-    icon: "mdi:palette"
-    accuracy_decimals: 0
-    lambda: 'return id(hue);'
-
-text_sensor:
-  - platform: version
-    name: "${friendly_name} ESPHome Version"
-    id: "${device_name}_esphome_version"
-    icon: mdi:numeric
-  - platform: wifi_info
-    ip_address:
-      name: ${friendly_name} IP Address
-      icon: mdi:ip-network
-    ssid:
-      name: ${friendly_name} Connected SSID
-      icon: mdi:wifi-star
-    mac_address:
-      name: ${friendly_name} Mac Wifi Address
-      icon: mdi:router-network-wireless
-
-button:
-  - platform: restart
-    name: "Restart ${friendly_name}"
-    icon: mdi:restart
-    # Button that enables light effect synchronization using Home Assistant automations
-  - platform: template
-    name: Decrement ${friendly_name} Color Loop Hue
-    id: ${device_name}_decrement_hue
-    icon: "mdi:led-strip-variant"
-    on_press:
-      then:
-        - lambda: 'id(hue) = (id(hue) - 1 < 0) ? 359 : id(hue) - 1;'
-    # Button that enables light effect synchronization using Home Assistant automations
-  - platform: template
-    name: Increment ${friendly_name} Color Loop Hue
-    id: ${device_name}_increment_hue
-    icon: "mdi:led-strip-variant"
-    on_press:
-      then:
-        - lambda: 'id(hue) = (id(hue) + 1 >= 360) ? 0 : id(hue) + 1;'

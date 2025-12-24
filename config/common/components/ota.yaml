@@ -1,0 +1,4 @@
+ota:
+  - platform: esphome
+    id: device_ota
+    password: !secret otapass

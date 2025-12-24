@@ -1,6 +1,6 @@
-<<: !include sonoff_plug_common.yaml
+packages:
+  - !include common/sonoff_s31.yaml
 
 substitutions:
   device_name: sf1
-  device_description: Sonoff S31 Plug | Stereo and Speakers Power Control
   friendly_name: Speakers

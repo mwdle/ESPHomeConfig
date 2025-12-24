@@ -1,0 +1,4 @@
+# Enable Home Assistant API (secure, more resource intensive)
+api:
+  encryption:
+    key: !secret encryption_key

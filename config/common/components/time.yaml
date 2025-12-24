@@ -1,0 +1,5 @@
+# Synchronize time from Home Assistant
+time:
+  # The homeassistant time platform REQUIRES that you include either `ha_api_basic.yaml` or `ha_api_secure.yaml` as a package in your configuration when using this base.yaml component
+  - platform: homeassistant
+    id: ha_time

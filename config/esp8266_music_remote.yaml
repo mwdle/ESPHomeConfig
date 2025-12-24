@@ -1,17 +1,18 @@
+packages:
+  - !include common/components/base.yaml
+  # HA secure API is too resource intensive for the ESP8266 for this project
+  - !include common/components/ha_api_basic.yaml
+
 # Important note:
 # This ESPHome configuration is setup to utilize two different Home Assistant provided media_player entities.
 # In reality, both of these media_player entities refer to the same physical media player, but they behave differently because they are provided by different integrations in Home Assistant.
 # In the context of this configuration, media_player.audio_direct refers to the Google Cast Integration provided player, and media_player.audio refers to the Music Assistant Integration provided player.
 # This is necessary to ensure that all the media playback controls can function properly regardless of the current media source of the media player (e.g. Music Assistant, Spotify, etc).
 
-substitutions:
-  device_name: emr
-  device_description: ESP8266 Music Remote
-  friendly_name: Music Remote
-
 esphome:
-  name: ${device_name}
-  comment: ${device_description}
+  name: emr
+  friendly_name: Music Remote
+  comment: ESP8266 Music Remote
   # This configuration requires the esp8266_music_remote.h file which contains implementation for all display rendering, playlist management, and more.
   includes:
     - esp8266_music_remote.h
@@ -21,112 +22,67 @@ esp8266:
   framework:
     version: recommended
 
-wifi:
-  ssid: !secret wifissid
-  password: !secret wifipass
-  power_save_mode: HIGH
-  fast_connect: true # Don't do a full scan, connect immediately
-
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: "${friendly_name} Fallback Hotspot"
-    password: !secret fallbackpass
-
-captive_portal:
-
-# Disable logging to save memory/battery
-# logger:
-#   baud_rate: 0
-#   level: DEBUG
-#   logs:
-#     component: ERROR
-
-# Enable Home Assistant API
-api:
-  # encryption: # ESP8266 isn't powerful enough to remain stable while providing encryption. Enabling encryption may result in frequent and unexpected resets
-  #   key: !secret encryption_key
-
-# Enable OTA updates
-ota:
-  - platform: esphome
-    id: my_ota
-    password: !secret otapass
-
-# Disable web server to save memory/battery
-# web_server:
-#   version: 3
-#   port: 80
-#   auth:
-#     username: !secret otauser
-#     password: !secret otapass
-
 font:
   - file:
       url: "https://raw.githubusercontent.com/googlefonts/opensans/main/fonts/ttf/OpenSans-Regular.ttf"
       type: web
     id: opensans_12
     size: 12
-    glyphs:
-      "@%’&!\"\\'()+,-_.:°/$#€£¥?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyzÀàÁáÃãçÈèÉéẼẽÌìÍíÑñôÒòÓóÕõØøŚśÙùÚúŨũ"
+    glyphs: "@%’&!\"\\'()+,-_.:°/$#€£¥?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyzÀàÁáÃãçÈèÉéẼẽÌìÍíÑñôÒòÓóÕõØøŚśÙùÚúŨũ"
   - file:
       url: "https://raw.githubusercontent.com/googlefonts/opensans/main/fonts/ttf/OpenSans-Regular.ttf"
       type: web
     id: opensans_10
     size: 10
-    glyphs:
-      "@%’&!\"\\'()+,-_.:°/$#€£¥?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyzÀàÁáÃãçÈèÉéẼẽÌìÍíÑñôÒòÓóÕõØøŚśÙùÚúŨũ"
+    glyphs: "@%’&!\"\\'()+,-_.:°/$#€£¥?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyzÀàÁáÃãçÈèÉéẼẽÌìÍíÑñôÒòÓóÕõØøŚśÙùÚúŨũ"
   - file:
       url: "https://raw.githubusercontent.com/Templarian/MaterialDesign-Webfont/master/fonts/materialdesignicons-webfont.ttf"
       type: web
     id: mdi_16
     size: 16
     glyphs: [
-      '󰖩', # wifi
-      '󰖪', # wifi-off
-      '󰄘', # cast
-      '󰄙', # cast-connected
-      '󰃟', # brightness-6
-      '󰀟', # cast-variant
-      '󰋼', # information
-    ]
+        "󰖩", # wifi
+        "󰖪", # wifi-off
+        "󰄘", # cast
+        "󰄙", # cast-connected
+        "󰃟", # brightness-6
+        "󰀟", # cast-variant
+        "󰋼", # information
+      ]
   - file:
       url: "https://raw.githubusercontent.com/Templarian/MaterialDesign-Webfont/master/fonts/materialdesignicons-webfont.ttf"
       type: web
     id: mdi_18
     size: 18
     glyphs: [
-      '󱬐', # volume-equal
-      '󰕾', # volume-high
-    ]
+        "󱬐", # volume-equal
+        "󰕾", # volume-high
+      ]
   - file:
       url: "https://raw.githubusercontent.com/Templarian/MaterialDesign-Webfont/master/fonts/materialdesignicons-webfont.ttf"
       type: web
     id: mdi_20
     size: 20
     glyphs: [
-      '󰲸', # playlist-music
-    ]
+        "󰲸", # playlist-music
+      ]
   - file:
       url: "https://raw.githubusercontent.com/Templarian/MaterialDesign-Webfont/master/fonts/materialdesignicons-webfont.ttf"
       type: web
     id: mdi_21
     size: 21
     glyphs: [
-      '󰏤', # pause
-      '󰐊', # play
-      '󰒮', # skip-previous
-      '󰒭', # skip-next
-    ]
+        "󰏤", # pause
+        "󰐊", # play
+        "󰒮", # skip-previous
+        "󰒭", # skip-next
+      ]
 
 i2c:
   sda: D7
   scl: D6
   scan: true
   frequency: 400khz # Setting to default of 50khz breaks Wi-Fi for whatever reason... Either way, setting it higher results in faster display updates, less delays from blocking display operations, and provides a smoother experience overall.
-
-time:
-  - platform: homeassistant
-    id: esptime
 
 # Balance/reduce OLED burn-in by inverting the display colors each minute
 interval:
@@ -140,7 +96,7 @@ interval:
 globals:
   - id: selected_playlist
     type: int
-    initial_value: '0'
+    initial_value: "0"
   - id: playlists
     type: std::vector<char*>
 
@@ -188,7 +144,7 @@ binary_sensor:
       then:
         - if:
             condition:
-              lambda: 'return id(screen).get_active_page() == id(playlistSelectionPage);'
+              lambda: "return id(screen).get_active_page() == id(playlistSelectionPage);"
             then:
               - homeassistant.action:
                   action: music_assistant.play_media
@@ -197,9 +153,9 @@ binary_sensor:
                     media_type: playlist
                     enqueue: replace
                   data_template:
-                    media_id: '{{ playlist }}'
+                    media_id: "{{ playlist }}"
                   variables:
-                    playlist: !lambda 'return id(playlists).at(id(selected_playlist));'
+                    playlist: !lambda "return id(playlists).at(id(selected_playlist));"
               - display.page.show: playbackPage
   - platform: gpio
     internal: true
@@ -219,7 +175,7 @@ binary_sensor:
         input: true
         pullup: true
     id: media_previous_track
-    publish_initial_state: true
+    trigger_on_initial_state: true
     on_multi_click:
       - timing: # on short press
           - OFF for at most 1s
@@ -250,7 +206,8 @@ binary_sensor:
                     data:
                       entity_id: media_player.audio # Media source is Music Assistant, fast forward using the Music Assistant Integration provided player
                     data_template:
-                      seek_position: >- # The media position attribute only updates when a song starts, ends, or when the user interacts with playback (e.g. scrubbing, play/pause, etc). Therefore, to determine the correct position, we need to compare the current time to the media_position_updated_at attribute.
+                      seek_position:
+                        >- # The media position attribute only updates when a song starts, ends, or when the user interacts with playback (e.g. scrubbing, play/pause, etc). Therefore, to determine the correct position, we need to compare the current time to the media_position_updated_at attribute.
                         {% set new_position = (int((now() - state_attr("media_player.audio",
                         "media_position_updated_at")).seconds + state_attr("media_player.audio",
                         "media_position")) - 15) %} 
@@ -265,7 +222,8 @@ binary_sensor:
                     data:
                       entity_id: media_player.audio_direct # Media source is not Music Assistant, fast forward using Google Cast Integration provided player
                     data_template:
-                      seek_position: >- # The media position attribute only updates when a song starts, ends, or when the user interacts with playback (e.g. scrubbing, play/pause, etc). Therefore, to determine the correct position, we need to compare the current time to the media_position_updated_at attribute.
+                      seek_position:
+                        >- # The media position attribute only updates when a song starts, ends, or when the user interacts with playback (e.g. scrubbing, play/pause, etc). Therefore, to determine the correct position, we need to compare the current time to the media_position_updated_at attribute.
                         {% set new_position = (int((now() - state_attr("media_player.audio_direct",
                         "media_position_updated_at")).seconds + state_attr("media_player.audio_direct",
                         "media_position")) - 15) %} 
@@ -297,29 +255,30 @@ binary_sensor:
     id: media_volume_sync
     on_press:
       - homeassistant.action:
-          action: script.sync_audio_group_volume # This is a custom Home Assistant script that synchronizes/balances the volume between my Chromecast Audio powered sound system and a Google Nest Mini which are paired in an audio group. See the HA YAML below:
-                                                 # alias: Sync Audio Group Volume
-                                                 # sequence:
-                                                 #   - condition: template
-                                                 #     value_template: >-
-                                                 #       {% set volume_difference =
-                                                 #       int(((state_attr("media_player.michael_s_nest_mini", "volume_level") -
-                                                 #       state_attr("media_player.michael_s_speakers",
-                                                 #       "volume_level"))*100)|abs|round(0)) %}
-                                                 #       {{ volume_difference < 7 or volume_difference > 9 }} 
-                                                 #   - variables:
-                                                 #       new_nest_mini_volume: >-
-                                                 #         {% set new_volume = state_attr('media_player.michael_s_speakers',
-                                                 #         'volume_level') + 0.08 %} {% if new_volume > 1 %} {{ 1.0 }} {% else %}
-                                                 #         {{ new_volume }} {% endif %}
-                                                 #   - metadata: {}
-                                                 #     data:
-                                                 #       volume_level: "{{ new_nest_mini_volume }}"
-                                                 #     action: media_player.volume_set
-                                                 #     target:
-                                                 #       entity_id: media_player.michael_s_nest_mini
-                                                 # description: ""
-                                                 # icon: mdi:sync
+          action:
+            script.sync_audio_group_volume # This is a custom Home Assistant script that synchronizes/balances the volume between my Chromecast Audio powered sound system and a Google Nest Mini which are paired in an audio group. See the HA YAML below:
+            # alias: Sync Audio Group Volume
+            # sequence:
+            #   - condition: template
+            #     value_template: >-
+            #       {% set volume_difference =
+            #       int(((state_attr("media_player.michael_s_nest_mini", "volume_level") -
+            #       state_attr("media_player.michael_s_speakers",
+            #       "volume_level"))*100)|abs|round(0)) %}
+            #       {{ volume_difference < 7 or volume_difference > 9 }}
+            #   - variables:
+            #       new_nest_mini_volume: >-
+            #         {% set new_volume = state_attr('media_player.michael_s_speakers',
+            #         'volume_level') + 0.08 %} {% if new_volume > 1 %} {{ 1.0 }} {% else %}
+            #         {{ new_volume }} {% endif %}
+            #   - metadata: {}
+            #     data:
+            #       volume_level: "{{ new_nest_mini_volume }}"
+            #     action: media_player.volume_set
+            #     target:
+            #       entity_id: media_player.michael_s_nest_mini
+            # description: ""
+            # icon: mdi:sync
   - platform: gpio
     internal: true
     pin:
@@ -328,7 +287,7 @@ binary_sensor:
       mode:
         input: true # Internal pullup not available on D8, needs external pullup resistor
     id: media_next_track
-    publish_initial_state: true
+    trigger_on_initial_state: true
     on_multi_click:
       - timing: # on short press
           - OFF for at most 1s
@@ -359,7 +318,8 @@ binary_sensor:
                     data:
                       entity_id: media_player.audio # Media source is Music Assistant, fast forward using the Music Assistant Integration provided player
                     data_template:
-                      seek_position: >- # The media position attribute only updates when a song start, ends, or when the user interacts with playback (e.g. scrubbing, play/pause, etc). Therefore, to determine the correct position, we need to compare the current time to the media_position_updated_at attribute.
+                      seek_position:
+                        >- # The media position attribute only updates when a song start, ends, or when the user interacts with playback (e.g. scrubbing, play/pause, etc). Therefore, to determine the correct position, we need to compare the current time to the media_position_updated_at attribute.
                         {% set new_position = (int((now() - state_attr("media_player.audio",
                         "media_position_updated_at")).seconds + state_attr("media_player.audio",
                         "media_position")) + 15) %} 
@@ -372,9 +332,10 @@ binary_sensor:
                 - homeassistant.action:
                     action: media_player.media_seek
                     data:
-                      entity_id: media_player.audio_direct  # Media source is not Music Assistant, fast forward using Google Cast Integration provided player
+                      entity_id: media_player.audio_direct # Media source is not Music Assistant, fast forward using Google Cast Integration provided player
                     data_template:
-                      seek_position: >-  # The media position attribute only updates when a song starts, ends, or when the user interacts with playback (e.g. scrubbing, play/pause, etc). Therefore, to determine the correct position, we need to compare the current time to the media_position_updated_at attribute.
+                      seek_position:
+                        >- # The media position attribute only updates when a song starts, ends, or when the user interacts with playback (e.g. scrubbing, play/pause, etc). Therefore, to determine the correct position, we need to compare the current time to the media_position_updated_at attribute.
                         {% set new_position = (int((now() - state_attr("media_player.audio_direct",
                         "media_position_updated_at")).seconds + state_attr("media_player.audio_direct",
                         "media_position")) + 15) %} 
@@ -383,11 +344,6 @@ binary_sensor:
                         {% else %} 
                         {{ state_attr("media_player.audio_direct", "media_duration") - 1 }} 
                         {% endif %}
-
-button:
-  - platform: restart
-    name: "Restart ${friendly_name}"
-    icon: mdi:restart
 
 sensor:
   - platform: rotary_encoder
@@ -408,34 +364,29 @@ sensor:
       then:
         - if:
             condition:
-              lambda: 'return id(screen).get_active_page() == id(playlistSelectionPage);'
+              lambda: "return id(screen).get_active_page() == id(playlistSelectionPage);"
             then:
-              - lambda: 'if (id(playlists).size() > 0) id(selected_playlist) = (id(selected_playlist) + 1) % id(playlists).size();'
+              - lambda: "if (id(playlists).size() > 0) id(selected_playlist) = (id(selected_playlist) + 1) % id(playlists).size();"
             else:
               - homeassistant.action:
                   action: media_player.volume_up
                   data:
-                    entity_id: media_player.audio # Only adjust volume via the Music Assistant Integration provided player since it offers finer grain control compared to the Google Cast Integration provided player. 
+                    entity_id: media_player.audio # Only adjust volume via the Music Assistant Integration provided player since it offers finer grain control compared to the Google Cast Integration provided player.
     on_anticlockwise:
       then:
         - if:
             condition:
-              lambda: 'return id(screen).get_active_page() == id(playlistSelectionPage);'
+              lambda: "return id(screen).get_active_page() == id(playlistSelectionPage);"
             then:
-              - lambda: 'if (id(playlists).size() > 0) id(selected_playlist) = (id(selected_playlist) - 1 + id(playlists).size()) % id(playlists).size();'
+              - lambda: "if (id(playlists).size() > 0) id(selected_playlist) = (id(selected_playlist) - 1 + id(playlists).size()) % id(playlists).size();"
             else:
               - homeassistant.action:
                   action: media_player.volume_down
                   data:
-                    entity_id: media_player.audio # Only adjust volume via the Music Assistant Integration provided player since it offers finer grain control compared to the Google Cast Integration provided player. 
+                    entity_id: media_player.audio # Only adjust volume via the Music Assistant Integration provided player since it offers finer grain control compared to the Google Cast Integration provided player.
     filters:
       - debounce: 10ms
     internal: true
-  - platform: wifi_signal
-    name: "${friendly_name} WiFi signal"
-    id: emr_wifi_signal
-    update_interval: 60s
-    icon: mdi:broadcast
   - platform: homeassistant
     id: media_volume
     entity_id: media_player.audio_direct
@@ -465,44 +416,45 @@ text_sensor:
     internal: true
   - platform: homeassistant
     id: playlists_string
-    entity_id: sensor.ma_library # This is a template sensor in HA that executes Music Assistant's "Get library items" action and stores the returned playlist names into a comma separated string as an attribute of the sensor.
-                                 # This is required for playlist selection because:
-                                 # 1. ESPHome doesn't support HA action response data
-                                 # 2. HA attributes have no character limit (as opposed to state which has a 255 character limit)
-                                 
-                                 # See the Home Assistant template sensor YAML below:
-                                 # template:
-                                 #   - trigger:
-                                 #       - trigger: time_pattern
-                                 #         hours: 0 # Update the playlist list once daily
-                                 #       - platform: state
-                                 #         entity_id: input_button.manually_refresh_music_assistant_library # Trigger: Manual update using the input button
-                                 #     action:
-                                 #       - action: music_assistant.get_library
-                                 #         data:
-                                 #           media_type: playlist
-                                 #           config_entry_id: "{{ config_entry_id('media_player.audio') }}" # Run the action on the appropriate Music Assistant Integration Instance
-                                 #         response_variable: playlists_data
-                                 #     sensor:
-                                 #       - unique_id: ma_library
-                                 #         name: ma_library
-                                 #         state: "{{ now().isoformat() }}"
-                                 #         attributes:
-                                 #           playlist_count: "{{ playlists_data['items'] | length }}"
-                                 #           playlists: >
-                                 #             {% if playlists_data is defined and playlists_data['items'] %}
-                                 #               {% set ns = namespace(playlist_names="") %}
-                                 #               {% for playlist in playlists_data['items'] %}
-                                 #                 {% set ns.playlist_names = ns.playlist_names ~ playlist['name'] ~ ',' %}
-                                 #               {% endfor %}
-                                 #               {% if ns.playlist_names.endswith(',') %}
-                                 #                 {% set ns.playlist_names = ns.playlist_names[:-1] %}
-                                 #               {% endif %}
-                                 #               {{ ns.playlist_names }}
-                                 #             {% else %} No playlists available
-                                 #             {% endif %}
+    entity_id:
+      sensor.ma_library # This is a template sensor in HA that executes Music Assistant's "Get library items" action and stores the returned playlist names into a comma separated string as an attribute of the sensor.
+      # This is required for playlist selection because:
+      # 1. ESPHome doesn't support HA action response data
+      # 2. HA attributes have no character limit (as opposed to state which has a 255 character limit)
+
+      # See the Home Assistant template sensor YAML below:
+      # template:
+      #   - trigger:
+      #       - trigger: time_pattern
+      #         hours: 0 # Update the playlist list once daily
+      #       - platform: state
+      #         entity_id: input_button.manually_refresh_music_assistant_library # Trigger: Manual update using the input button
+      #     action:
+      #       - action: music_assistant.get_library
+      #         data:
+      #           media_type: playlist
+      #           config_entry_id: "{{ config_entry_id('media_player.audio') }}" # Run the action on the appropriate Music Assistant Integration Instance
+      #         response_variable: playlists_data
+      #     sensor:
+      #       - unique_id: ma_library
+      #         name: ma_library
+      #         state: "{{ now().isoformat() }}"
+      #         attributes:
+      #           playlist_count: "{{ playlists_data['items'] | length }}"
+      #           playlists: >
+      #             {% if playlists_data is defined and playlists_data['items'] %}
+      #               {% set ns = namespace(playlist_names="") %}
+      #               {% for playlist in playlists_data['items'] %}
+      #                 {% set ns.playlist_names = ns.playlist_names ~ playlist['name'] ~ ',' %}
+      #               {% endfor %}
+      #               {% if ns.playlist_names.endswith(',') %}
+      #                 {% set ns.playlist_names = ns.playlist_names[:-1] %}
+      #               {% endif %}
+      #               {{ ns.playlist_names }}
+      #             {% else %} No playlists available
+      #             {% endif %}
     attribute: "playlists"
     internal: true
     on_value:
       then:
-        - lambda: 'load_playlist_sensor_data(x.c_str());'
+        - lambda: "load_playlist_sensor_data(x.c_str());"

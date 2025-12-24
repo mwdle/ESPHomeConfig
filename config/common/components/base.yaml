@@ -1,0 +1,18 @@
+packages:
+  - !include debug.yaml
+  - !include logger.yaml
+  - !include wifi.yaml
+  - !include time.yaml
+  - !include ota.yaml
+
+button:
+  - platform: restart
+    name: Restart
+    id: restart_device
+    icon: mdi:restart
+
+sensor:
+  - platform: uptime
+    name: Uptime
+    update_interval: 60s
+    icon: mdi:timer-outline

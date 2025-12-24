@@ -1,6 +1,6 @@
-<<: !include gosund_plug_common.yaml
+packages:
+  - !include common/gosund_wp3.yaml
 
 substitutions:
   device_name: nm
-  device_description: Google Nest Mini | Power Controls
   friendly_name: Nest Mini Power

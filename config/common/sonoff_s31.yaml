@@ -1,0 +1,82 @@
+packages:
+  - !include components/base.yaml
+  - !include components/ha_api_secure.yaml
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  comment: Sonoff S31 Smart Plug
+
+esp8266:
+  board: esp01_1m
+  restore_from_flash: true
+
+uart:
+  rx_pin: RX
+  baud_rate: 4800
+  parity: EVEN
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    name: Button
+    icon: mdi:power-standby
+    on_press:
+      - switch.toggle: relay
+  - platform: status
+    name: Status
+    icon: mdi:power-standby
+
+sensor:
+  - platform: cse7766
+    current:
+      name: Current
+      accuracy_decimals: 2
+      filters:
+        - throttle_average: 60s
+    voltage:
+      name: Voltage
+      accuracy_decimals: 2
+      filters:
+        - throttle_average: 60s
+    power:
+      name: Power
+      accuracy_decimals: 2
+      id: my_power
+      filters:
+        - throttle_average: 60s
+    energy:
+      name: Energy
+      accuracy_decimals: 2
+      filters:
+        - throttle: 60s
+    apparent_power: #(only available with version 2024.3.0 or greater)
+      name: Apparent Power
+      filters:
+        - throttle_average: 60s
+    power_factor: #(only available with version 2024.3.0 or greater)
+      name: Power Factor
+      accuracy_decimals: 2
+      filters:
+        - throttle_average: 60s
+  - platform: total_daily_energy #(Optional, not specific to cse7766)
+    name: Daily Energy
+    icon: mdi:lightning-bolt-circle
+    power_id: my_power
+    accuracy_decimals: 2
+
+switch:
+  - platform: gpio
+    name: Relay
+    icon: mdi:power-socket-us
+    pin: GPIO12
+    id: relay
+    restore_mode: RESTORE_DEFAULT_OFF
+
+status_led:
+  pin:
+    number: GPIO13
+    inverted: True
