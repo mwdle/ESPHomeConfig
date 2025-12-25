@@ -29,22 +29,9 @@ Configurations and flashing instructions for my ESPHome converted Gosund, Sonoff
    git clone https://github.com/mwdle/ESPHomeConfig.git
    ```
 
-2. Create a folder on your system for Docker bind mounts / storing container files. The folder should have the following structure:
+2. Copy `.env.example` to `.env` and configure the properties for your environment.
 
-   ```shell
-   docker_volumes/
-   ├── ESPHome/
-   │   └── .esphome/
-   ```
-
-3. Change the `.env` file properties for your configuration:
-
-   ```properties
-   DOCKER_VOLUMES=<PATH_TO_DOCKER_VOLUMES_FOLDER> # The folder created in the previous step.
-   TZ=<YOUR_TIMEZONE_HERE> # e.g. `America/Denver`
-   ```
-
-4. Create a file called secrets.yaml in the "config" of this project containing the following properties:
+3. Create a file called secrets.yaml in the "config" of this project containing the following properties:
 
    ```YAML
    wifissid: "<YOUR_SSID>"
@@ -55,8 +42,8 @@ Configurations and flashing instructions for my ESPHome converted Gosund, Sonoff
    otapass: "<YOUR_OTA_PASSWORD>"
    ```
 
-5. Open a terminal in the directory containing the docker-compose file.
-6. Create docker macvlan and bridge network for the container.
+4. Open a terminal in the directory containing the docker-compose file.
+5. Create docker macvlan and bridge network for the container.
 
    ```shell
    docker network create -d macvlan --subnet=192.168.0.0/24 --gateway=192.168.0.1 -o parent=eno1 AAA_LAN
@@ -67,17 +54,27 @@ Configurations and flashing instructions for my ESPHome converted Gosund, Sonoff
    - AAA in the network name ensures Docker uses this network as the primary interface for all connected containers.
    - eno1 is the name of the network interface on my system. Replace this with the name of your network interface.
 
-7. Start the container:
+6. Start the container:
 
    ```shell
    docker compose up -d
    ```
 
-Your container should be up and running and you should be able to connect to the ESPHome web interface and also execute ESPHome commands via `docker exec` like so:
+Your container should be up and running and you should be able to execute ESPHome commands via `docker exec` like so:
 
 ```shell
-docker exec -it esphome esphome run YOUR_CONFIG.yaml
+docker exec -it ESPHome esphome run YOUR_CONFIG.yaml
 ```
+
+**Accessing the Web Interface:**
+
+Due to the MacVLAN network configuration, the ESPHome container receives a DHCP-assigned IP on your LAN. The web interface runs on port 6052. You can access it using one of the following options:
+
+- Finding the container's IP address via your router's DHCP lease table or using `docker inspect ESPHome`
+- Configuring a static IP in the MacVLAN network setup
+- Using a reverse proxy (advanced users)
+
+Note: Standard Docker port forwarding (`-p` flag) does not work with MacVLAN networks.
 
 ## Flashing Instructions (coming soon)
 
