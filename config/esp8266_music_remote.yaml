@@ -11,8 +11,8 @@ packages:
 
 esphome:
   name: emr
-  friendly_name: Music Remote
-  comment: ESP8266 Music Remote
+  friendly_name: ESP8266 Music Remote
+  comment: ESP8266-based Remote for Music Assistant
   # This configuration requires the esp8266_music_remote.h file which contains implementation for all display rendering, playlist management, and more.
   includes:
     - esp8266_music_remote.h
