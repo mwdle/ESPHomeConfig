@@ -19,13 +19,11 @@ binary_sensor:
       inverted: True
     name: Button
     icon: mdi:power-standby
-    id: button
     on_press:
       - switch.toggle: relay
   - platform: status
     name: Status
     icon: mdi:power-standby
-    id: status
 
 switch:
   - platform: gpio
