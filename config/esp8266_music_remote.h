@@ -59,7 +59,7 @@ void render_ui_controls() {
  * Allows users to determine the connection status to wifi and Home Assistant API.
  */
 void render_statistics() {
-    auto wifi_signal = emr_wifi_signal->state;
+    auto wifi_signal = wifi_signal_sensor->state;
     if (isnan(wifi_signal) || wifi_signal > 0)
         screen->print(3, 0, mdi_16, "󰖪"); // wifi-off icon
     else

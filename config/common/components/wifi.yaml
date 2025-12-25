@@ -13,6 +13,7 @@ captive_portal:
 sensor:
   - platform: wifi_signal
     name: WiFi Signal
+    id: wifi_signal_sensor
     update_interval: 60s
     icon: mdi:broadcast
 
