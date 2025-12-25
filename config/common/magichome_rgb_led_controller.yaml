@@ -1,7 +1,6 @@
 packages:
   - !include components/base.yaml
-  # HA secure API is too resource intensive for the ESP8285 based MagicHome boards
-  - !include components/ha_api_basic.yaml
+  - !include components/ha_api_secure.yaml
 
 esphome:
   name: ${device_name}
