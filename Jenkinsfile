@@ -13,10 +13,6 @@
  * Deploys to a stable directory on the host to preserve data between builds. The path is
  * dynamically set using the DOCKER_VOLUMES environment variable.
  *
- * - disableTriggers: true
- * Disables automatic builds from webhooks or SCM scans. This job will only run when
- * manually triggered.
- *
  * - postCheckoutSteps:
  * Injects the secrets.yaml file from Jenkins credentials into the config directory.
  * This file contains WiFi credentials, API keys, and OTA passwords required by ESPHome
@@ -26,7 +22,6 @@
 dockerComposePipeline(
     envFileCredentialIds: ["ESPHomeConfig.env"],
     persistentWorkspace: "/home/mwdle/docker/deployments",
-    disableTriggers: true,
     postCheckoutSteps: {
         stage('Inject ESPHome Secrets') {
             withCredentials([file(credentialsId: 'secrets.yaml', variable: 'SECRETS_FILE')]) {
