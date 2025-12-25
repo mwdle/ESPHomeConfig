@@ -1,7 +1,6 @@
 packages:
   - !include common/components/base.yaml
-  # HA secure API is too resource intensive for the ESP8266 for this project
-  - !include common/components/ha_api_basic.yaml
+  - !include common/components/ha_api_secure.yaml
 
 # Important note:
 # This ESPHome configuration is setup to utilize two different Home Assistant provided media_player entities.
