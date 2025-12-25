@@ -26,68 +26,14 @@ output:
     id: blue_channel
     pin: GPIO13
 
-globals:
-  - id: hue
-    type: int
-    initial_value: "0"
-
 light:
   - platform: rgb
     name: Controller
     id: leds
-    restore_mode: ALWAYS_OFF
+    restore_mode: RESTORE_DEFAULT_OFF
     red: red_channel
     green: green_channel
     blue: blue_channel
-    on_turn_on:
-      - light.turn_on:
-          id: leds
-          effect: Color Loop
-          brightness: 100%
-    effects:
-      - lambda:
-          name: Color Loop
-          update_interval: 100ms
-          lambda: |-
-            id(hue) += 1;
-            if (id(hue) >= 360) {
-              id(hue) = 0;
-            }
-            float r, g, b;
-            hsv_to_rgb(id(hue), 1.0, 1.0, r, g, b);
-            auto call = id(leds).turn_on();
-            call.set_transition_length(130);
-            call.set_rgb(r,g,b);
-            call.perform();
-
-sensor:
-  # Sensor for light effect synchronization using Home Assistant automations
-  - platform: template
-    name: Color Loop Hue
-    id: leds_color_loop_hue
-    update_interval: 2s
-    unit_of_measurement: ""
-    icon: "mdi:palette"
-    accuracy_decimals: 0
-    lambda: "return id(hue);"
-
-button:
-  # Button that enables light effect synchronization using Home Assistant automations
-  - platform: template
-    name: Decrement Color Loop Hue
-    id: leds_decrement_hue
-    icon: "mdi:led-strip-variant"
-    on_press:
-      then:
-        - lambda: "id(hue) = (id(hue) - 1 < 0) ? 359 : id(hue) - 1;"
-    # Button that enables light effect synchronization using Home Assistant automations
-  - platform: template
-    name: Increment Color Loop Hue
-    id: leds_increment_hue
-    icon: "mdi:led-strip-variant"
-    on_press:
-      then:
-        - lambda: "id(hue) = (id(hue) + 1 >= 360) ? 0 : id(hue) + 1;"
 
 binary_sensor:
   - platform: remote_receiver
