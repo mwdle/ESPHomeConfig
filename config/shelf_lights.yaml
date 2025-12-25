@@ -2,6 +2,6 @@ packages:
   - !include common/magichome_rgb_led_controller.yaml
 
 substitutions:
-  device_name: mh1
-  device_description: Magic Home Wifi ESP-IR-B-v2.3 RGB LED Controller
+  device_name: shelf-lights
   friendly_name: Shelf Lights
+  device_description: Magic Home Wifi ESP-IR-B-v2.3 RGB LED Controller

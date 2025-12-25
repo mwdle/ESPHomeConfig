@@ -2,5 +2,5 @@ packages:
   - !include common/sonoff_s31.yaml
 
 substitutions:
-  device_name: sf2
+  device_name: laptop-charger
   friendly_name: Laptop Charger

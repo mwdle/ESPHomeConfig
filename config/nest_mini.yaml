@@ -2,5 +2,5 @@ packages:
   - !include common/gosund_wp3.yaml
 
 substitutions:
-  device_name: nm
+  device_name: nest-mini-power
   friendly_name: Nest Mini Power

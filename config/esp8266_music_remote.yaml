@@ -10,7 +10,7 @@ packages:
 # This is necessary to ensure that all the media playback controls can function properly regardless of the current media source of the media player (e.g. Music Assistant, Spotify, etc).
 
 esphome:
-  name: emr
+  name: esp8266-music-remote
   friendly_name: ESP8266 Music Remote
   comment: ESP8266-based Remote for Music Assistant
   # This configuration requires the esp8266_music_remote.h file which contains implementation for all display rendering, playlist management, and more.

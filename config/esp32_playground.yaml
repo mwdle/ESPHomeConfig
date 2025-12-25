@@ -4,9 +4,9 @@ packages:
   - !include common/components/webserver.yaml
 
 esphome:
-  name: ep
-  comment: ESP32 Testing Device and Playground
+  name: esp-playground
   friendly_name: ESP Playground
+  comment: ESP32 Testing Device and Playground
 
 esp32:
   board: esp32dev
