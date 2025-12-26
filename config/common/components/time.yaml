@@ -1,5 +1,10 @@
+packages:
+  # Standard HA time sync (defaults to basic API).
+  # To enable encryption, include `ha_api_secure.yaml` in your main config alongside this package.
+  # ESPHome's merge logic will ensure the secure config overrides this basic one.
+  - !include ha_api_basic.yaml
+
 # Synchronize time from Home Assistant
 time:
-  # The homeassistant time platform REQUIRES that you include either `ha_api_basic.yaml` or `ha_api_secure.yaml` as a package in your configuration when using this base.yaml component
   - platform: homeassistant
     id: ha_time

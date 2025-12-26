@@ -1,4 +1,5 @@
 packages:
+  - !include ha_api_secure.yaml
   - !include debug.yaml
   - !include logger.yaml
   - !include wifi.yaml

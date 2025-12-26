@@ -1,6 +1,5 @@
 packages:
   - !include common/components/base.yaml
-  - !include common/components/ha_api_secure.yaml
   - !include common/components/webserver.yaml
 
 esphome:

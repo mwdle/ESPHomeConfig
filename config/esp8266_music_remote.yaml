@@ -1,6 +1,5 @@
 packages:
   - !include common/components/base.yaml
-  - !include common/components/ha_api_secure.yaml
 
 # Important note:
 # This ESPHome configuration is setup to utilize two different Home Assistant provided media_player entities.

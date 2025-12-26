@@ -1,6 +1,5 @@
 packages:
   - !include components/base.yaml
-  - !include components/ha_api_secure.yaml
 
 esphome:
   name: ${device_name}
