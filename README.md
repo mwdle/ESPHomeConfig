@@ -31,16 +31,7 @@ Configurations and flashing instructions for my ESPHome converted Gosund, Sonoff
 
 2. Copy `.env.example` to `.env` and configure the properties for your environment.
 
-3. Create a file called secrets.yaml in the "config" of this project containing the following properties:
-
-   ```YAML
-   wifissid: "<YOUR_SSID>"
-   wifipass: "<YOUR_PASSWORD>"
-   fallbackpass: "<YOUR_HOTSPOT_FALLBACK_PASSWORD>"
-   encryption_key: "<YOUR_ENCRYPTION_KEY>"
-   otauser: "<YOUR_OTA_USERNAME>"
-   otapass: "<YOUR_OTA_PASSWORD>"
-   ```
+3. Copy `config/secrets.yaml.template` to `config/secrets.yaml` and update the variables with your own values.
 
 4. Open a terminal in the directory containing the docker-compose file.
 5. Create docker macvlan and bridge network for the container.
