@@ -1,0 +1,5 @@
+sensor:
+  - platform: uptime
+    name: Uptime
+    update_interval: 60s
+    icon: mdi:timer-outline
