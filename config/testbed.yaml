@@ -1,5 +1,5 @@
 packages:
-  - !include common/daybetter_bk7231s_rgb_led_controller.yaml
+  - !include common/daybetter_rgb_led_controller.yaml
 
 substitutions:
   device_name: testbed
