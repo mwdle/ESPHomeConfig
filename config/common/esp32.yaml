@@ -1,0 +1,20 @@
+packages:
+  - !include components/base.yaml
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  comment: ${device_description}
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+switch:
+  - platform: gpio
+    pin: GPIO2
+    name: Onboard LED
+    id: onboard_led
+    icon: mdi:led-on
+    restore_mode: DISABLED

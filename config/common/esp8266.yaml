@@ -1,0 +1,12 @@
+packages:
+  - !include components/base.yaml
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  comment: ${device_description}
+
+esp8266:
+  board: nodemcuv2
+  framework:
+    version: recommended

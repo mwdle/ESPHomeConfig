@@ -1,5 +1,5 @@
 packages:
-  - !include common/components/base.yaml
+  - !include common/esp8266.yaml
 
 # Important note:
 # This ESPHome configuration is setup to utilize two different Home Assistant provided media_player entities.
@@ -7,18 +7,15 @@ packages:
 # In the context of this configuration, media_player.audio_direct refers to the Google Cast Integration provided player, and media_player.audio refers to the Music Assistant Integration provided player.
 # This is necessary to ensure that all the media playback controls can function properly regardless of the current media source of the media player (e.g. Music Assistant, Spotify, etc).
 
-esphome:
-  name: esp8266-music-remote
-  friendly_name: ESP8266 Music Remote
-  comment: ESP8266-based Remote for Music Assistant
-  # This configuration requires the esp8266_music_remote.h file which contains implementation for all display rendering, playlist management, and more.
-  includes:
-    - esp8266_music_remote.h
+substitutions:
+  device_name: music-remote
+  friendly_name: Music Remote
+  device_description: Remote for Music Assistant
 
-esp8266:
-  board: nodemcuv2
-  framework:
-    version: recommended
+esphome:
+  # This configuration requires the music_remote.h file which contains implementation for all display rendering, playlist management, and more.
+  includes:
+    - music_remote.h
 
 font:
   - file:

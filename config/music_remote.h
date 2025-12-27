@@ -1,6 +1,6 @@
 /**
- * @file esp8266_music_remote.h
- * @brief ESPHome C++ implementation for the ESP8266 Music Remote project to render all display pages, handle playlist management, and more.
+ * @file music_remote.h
+ * @brief ESPHome C++ implementation for the Music Remote project to render all display pages, handle playlist management, and more.
  * @author mwdle
  *
  * This file contains various functions to render and handle all display pages, including the music player, playlist selection, and statistics page. More pages may be implemented in the future.
