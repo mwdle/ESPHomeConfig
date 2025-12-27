@@ -12,22 +12,20 @@ bk72xx:
 output:
   - platform: libretiny_pwm
     id: output_red
-    pin: P6
-    frequency: 1000 Hz
-
-  - platform: libretiny_pwm
-    id: output_green
     pin: P7
     frequency: 1000 Hz
-
+  - platform: libretiny_pwm
+    id: output_green
+    pin: P8
+    frequency: 1000 Hz
   - platform: libretiny_pwm
     id: output_blue
-    pin: P8
+    pin: P6
     frequency: 1000 Hz
 
 light:
   - platform: rgb
-    name: "Daybetter LED Strip"
+    name: Controller
     id: light_rgb
     red: output_red
     green: output_green
