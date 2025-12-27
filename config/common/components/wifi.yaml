@@ -2,7 +2,6 @@ wifi:
   ssid: !secret wifissid
   password: !secret wifipass
   fast_connect: true # Don't do a full scan, connect immediately
-  min_auth_mode: WPA2
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
