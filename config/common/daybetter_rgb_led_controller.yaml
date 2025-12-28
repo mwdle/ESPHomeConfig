@@ -4,7 +4,7 @@ packages:
 
 # For rgb_ir_remote
 substitutions:
-  ir_receiver_pin: P16
+  ir_receiver_pin: P14
   light_id: leds
 
 esphome:
