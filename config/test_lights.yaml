@@ -2,5 +2,5 @@ packages:
   - !include common/daybetter_rgb_led_controller.yaml
 
 substitutions:
-  device_name: test_lights
+  device_name: test-lights
   friendly_name: Test Lights
