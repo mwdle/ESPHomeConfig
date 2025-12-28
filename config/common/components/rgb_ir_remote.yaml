@@ -16,7 +16,7 @@ binary_sensor:
   - platform: remote_receiver
     name: "Remote ON"
     internal: true
-		icon: mdi:camera-control
+    icon: mdi:camera-control
     raw:
       code:
         [
@@ -95,7 +95,7 @@ binary_sensor:
   - platform: remote_receiver
     name: "Remote OFF"
     internal: true
-		icon: mdi:camera-control
+    icon: mdi:camera-control
     raw:
       code:
         [
@@ -174,7 +174,7 @@ binary_sensor:
   - platform: remote_receiver
     name: "Remote BRIGHTUP"
     internal: true
-		icon: mdi:camera-control
+    icon: mdi:camera-control
     raw:
       code:
         [
@@ -255,7 +255,7 @@ binary_sensor:
   - platform: remote_receiver
     name: "Remote BRIGHTDOWN"
     internal: true
-		icon: mdi:camera-control
+    icon: mdi:camera-control
     raw:
       code:
         [
@@ -336,7 +336,7 @@ binary_sensor:
   - platform: remote_receiver
     name: "Remote RED"
     internal: true
-		icon: mdi:camera-control
+    icon: mdi:camera-control
     raw:
       code:
         [
@@ -420,7 +420,7 @@ binary_sensor:
   - platform: remote_receiver
     name: "Remote GREEN"
     internal: true
-		icon: mdi:camera-control
+    icon: mdi:camera-control
     raw:
       code:
         [
@@ -504,7 +504,7 @@ binary_sensor:
   - platform: remote_receiver
     name: "Remote BLUE"
     internal: true
-		icon: mdi:camera-control
+    icon: mdi:camera-control
     raw:
       code:
         [
@@ -588,7 +588,7 @@ binary_sensor:
   - platform: remote_receiver
     name: "Remote WHITE"
     internal: true
-		icon: mdi:camera-control
+    icon: mdi:camera-control
     raw:
       code:
         [
