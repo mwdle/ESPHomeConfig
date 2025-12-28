@@ -1,5 +1,11 @@
 packages:
   - !include components/base.yaml
+  - !include components/rgb_ir_remote.yaml
+
+# For rgb_ir_remote
+substitutions:
+  ir_receiver_pin: P16
+  light_id: leds
 
 esphome:
   name: ${device_name}
@@ -8,10 +14,6 @@ esphome:
 
 bk72xx:
   board: generic-bk7231t-qfn32-tuya
-
-remote_receiver:
-  pin: P16
-  dump: all
 
 output:
   - platform: libretiny_pwm
@@ -30,7 +32,7 @@ output:
 light:
   - platform: rgb
     name: Controller
-    id: light_rgb
+    id: ${light_id}
     red: output_red
     green: output_green
     blue: output_blue
