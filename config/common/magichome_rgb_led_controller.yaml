@@ -1,6 +1,7 @@
 packages:
   - !include esp8266_esp01_1m.yaml
   - !include components/rgb_ir_remote.yaml
+  - !include components/time.yaml
 
 substitutions:
   device_description: Magic Home Wifi RGB LED Controller
@@ -32,7 +33,7 @@ light:
           name: "Color Loop"
           update_interval: 1s
           lambda: |-
-            int loop_seconds = 36;
+            int loop_seconds = 60;
 
             auto now = id(ha_time).now();
             if (!now.is_valid()) return;
