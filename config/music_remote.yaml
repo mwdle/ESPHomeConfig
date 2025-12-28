@@ -10,7 +10,7 @@ packages:
 substitutions:
   device_name: music-remote
   friendly_name: Music Remote
-  device_description: Remote for Music Assistant
+  device_description: ESP8266-Based Remote for Music Assistant
 
 esphome:
   # This configuration requires the music_remote.h file which contains implementation for all display rendering, playlist management, and more.
