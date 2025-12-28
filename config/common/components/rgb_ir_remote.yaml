@@ -90,7 +90,7 @@ binary_sensor:
         ]
     on_press:
       then:
-        - light.turn_on: light_id
+        - light.turn_on: ${light_id}
 
   - platform: remote_receiver
     name: "Remote OFF"
@@ -169,7 +169,7 @@ binary_sensor:
         ]
     on_press:
       then:
-        - light.turn_off: light_id
+        - light.turn_off: ${light_id}
 
   - platform: remote_receiver
     name: "Remote BRIGHTUP"
@@ -249,7 +249,7 @@ binary_sensor:
     on_press:
       then:
         - light.dim_relative:
-            id: light_id
+            id: ${light_id}
             relative_brightness: 5%
 
   - platform: remote_receiver
@@ -330,7 +330,7 @@ binary_sensor:
     on_press:
       then:
         - light.dim_relative:
-            id: light_id
+            id: ${light_id}
             relative_brightness: -5%
 
   - platform: remote_receiver
@@ -411,7 +411,7 @@ binary_sensor:
     on_press:
       then:
         - light.turn_on:
-            id: light_id
+            id: ${light_id}
             red: 100%
             green: 0%
             blue: 0%
@@ -495,7 +495,7 @@ binary_sensor:
     on_press:
       then:
         - light.turn_on:
-            id: light_id
+            id: ${light_id}
             red: 0%
             green: 100%
             blue: 0%
@@ -579,7 +579,7 @@ binary_sensor:
     on_press:
       then:
         - light.turn_on:
-            id: light_id
+            id: ${light_id}
             red: 0%
             green: 0%
             blue: 100%
@@ -663,7 +663,7 @@ binary_sensor:
     on_press:
       then:
         - light.turn_on:
-            id: light_id
+            id: ${light_id}
             red: 100%
             green: 100%
             blue: 100%
