@@ -1,5 +1,5 @@
 packages:
-  - !include common/esp8266.yaml
+  - !include common/esp8266_nodemcuv2.yaml
 
 # Important note:
 # This ESPHome configuration is setup to utilize two different Home Assistant provided media_player entities.

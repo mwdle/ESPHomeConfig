@@ -2,11 +2,6 @@ packages:
   - !include components/base.yaml
   - !include components/esp_wifi_min_auth.yaml
 
-esphome:
-  name: ${device_name}
-  friendly_name: ${friendly_name}
-  comment: ${device_description}
-
 esp32:
   board: esp32dev
   framework:

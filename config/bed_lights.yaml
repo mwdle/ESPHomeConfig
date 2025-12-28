@@ -4,4 +4,3 @@ packages:
 substitutions:
   device_name: bed-lights
   friendly_name: Bed Lights
-  device_description: Magic Home Wifi ZJ-WFMN-A V1.1 RGB LED Controller

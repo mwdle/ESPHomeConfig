@@ -2,18 +2,14 @@ packages:
   - !include components/base.yaml
   - !include components/rgb_ir_remote.yaml
 
-# For rgb_ir_remote
-substitutions:
-  ir_receiver_pin: P14
-  light_id: leds
-
-esphome:
-  name: ${device_name}
-  friendly_name: ${friendly_name}
-  comment: Daybetter FLSL501115WIFITY RGB LED Strip (BK7231T)
-
 bk72xx:
   board: generic-bk7231t-qfn32-tuya
+
+substitutions:
+  device_description: Daybetter FLSL501115WIFITY RGB LED Controller
+  # For rgb_ir_remote
+  ir_receiver_pin: P14
+  light_id: leds
 
 output:
   - platform: libretiny_pwm

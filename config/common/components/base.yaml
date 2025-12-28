@@ -1,3 +1,6 @@
+# Base ESPHome configuration for all devices.
+# Requires substitutions: device_name, friendly_name, device_description
+
 packages:
   - !include ha_api_secure.yaml
   - !include debug.yaml
@@ -7,3 +10,8 @@ packages:
   - !include ota.yaml
   - !include restart_button.yaml
   - !include uptime_sensor.yaml
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  comment: ${device_description}
