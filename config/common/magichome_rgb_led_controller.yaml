@@ -1,7 +1,6 @@
 packages:
   - !include esp8266_esp01_1m.yaml
   - !include components/rgb_ir_remote.yaml
-  - !include components/time.yaml
 
 substitutions:
   device_description: Magic Home Wifi RGB LED Controller
