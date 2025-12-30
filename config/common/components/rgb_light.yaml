@@ -1,0 +1,39 @@
+# Configures an RGB light controller with PWM outputs.
+# Includes a "Color Wheel" effect that cycles through the color spectrum.
+#
+# The Color Wheel effect uses time-based calculations to ensure all devices running this
+# effect stay synchronized when using the ESPHome time component. The effect completes
+# one full color wheel rotation per minute (360 degrees in 60,000ms).
+#
+# REQUIRED SUBSTITUTIONS:
+#   light_id        : The ID of the light entity to control (e.g., leds, living_room_rgb).
+#   output_red      : The ID of the red PWM output channel (e.g., output_red, red_channel).
+#   output_green    : The ID of the green PWM output channel (e.g., output_green, green_channel).
+#   output_blue     : The ID of the blue PWM output channel (e.g., output_blue, blue_channel).
+
+light:
+  - platform: rgb
+    name: Controller
+    id: ${light_id}
+    red: ${output_red}
+    green: ${output_green}
+    blue: ${output_blue}
+    restore_mode: RESTORE_DEFAULT_OFF
+    effects:
+      - lambda:
+          name: "Color Wheel"
+          update_interval: 80ms
+          lambda: |-
+            struct timeval tv;
+            gettimeofday(&tv, NULL); // Time-based color synchronizes effect across devices when using ESPHome time component
+            uint32_t ms = (tv.tv_sec % 60) * 1000 + (tv.tv_usec / 1000); // Number of milliseconds elapsed in the current minute (0 to 59,999)
+
+            float hue = ms * 0.006f; // 1 color wheel rotation per minute == 360 degrees / 60000 ms == 0.006 degrees per ms
+            float r, g, b;
+            hsv_to_rgb(hue, 1.0, 1.0, r, g, b);
+
+            auto call = id(${light_id}).turn_on();
+            call.set_transition_length(160); // 2x update_interval
+            call.set_publish(false);
+            call.set_rgb(r, g, b);
+            call.perform();

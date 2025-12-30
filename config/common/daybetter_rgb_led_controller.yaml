@@ -1,35 +1,33 @@
 packages:
   - !include components/base.yaml
+  - !include components/rgb_light.yaml
   - !include components/rgb_ir_remote.yaml
 
 bk72xx:
   board: generic-bk7231t-qfn32-tuya
 
 substitutions:
+  # base.yaml
   device_description: Daybetter FLSL501115WIFITY RGB LED Controller
-  # For rgb_ir_remote
+  # rgb_ir_remote
   ir_receiver_pin: P14
+  # rgb_ir_remote and rgb_light
   light_id: leds
+  # rgb_light
+  output_red: output_red
+  output_green: output_green
+  output_blue: output_blue
 
 output:
   - platform: libretiny_pwm
-    id: output_red
+    id: ${output_red}
     pin: P7
     frequency: 1000 Hz
   - platform: libretiny_pwm
-    id: output_green
+    id: ${output_green}
     pin: P8
     frequency: 1000 Hz
   - platform: libretiny_pwm
-    id: output_blue
+    id: ${output_blue}
     pin: P6
     frequency: 1000 Hz
-
-light:
-  - platform: rgb
-    name: Controller
-    id: ${light_id}
-    red: output_red
-    green: output_green
-    blue: output_blue
-    restore_mode: RESTORE_DEFAULT_OFF
