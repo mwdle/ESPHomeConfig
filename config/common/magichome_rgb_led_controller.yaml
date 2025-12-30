@@ -29,20 +29,19 @@ light:
     restore_mode: RESTORE_DEFAULT_OFF
     effects:
       - lambda:
-          name: "Color Loop"
-          update_interval: 1s
+          name: "Color Wheel"
+          update_interval: 80ms
           lambda: |-
-            int loop_seconds = 60;
+            struct timeval tv;
+            gettimeofday(&tv, NULL);
+            uint32_t ms = (tv.tv_sec % 60) * 1000 + (tv.tv_usec / 1000); // Time based color calculation enables effect synchronization across devices
 
-            auto now = id(ha_time).now();
-            if (!now.is_valid()) return;
-
-            float hue = (now.timestamp % loop_seconds) * (360.0f / loop_seconds);
-
+            float hue = ms * 0.006f; // 360 degrees / 60000 ms = 0.006 degrees per ms = 1 color wheel rotation per minute
             float r, g, b;
             hsv_to_rgb(hue, 1.0, 1.0, r, g, b);
 
             auto call = id(${light_id}).turn_on();
-            call.set_transition_length(1100); 
+            call.set_transition_length(160); // 2x update_interval
+            call.set_publish(false);
             call.set_rgb(r, g, b);
             call.perform();
