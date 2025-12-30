@@ -1,5 +1,10 @@
 # Base ESPHome configuration for all devices.
-# Requires substitutions: device_name, friendly_name, device_description
+# Includes essential components for Home Assistant integration, connectivity, and device management.
+#
+# REQUIRED SUBSTITUTIONS:
+#   device_name        : The internal device name for ESPHome (e.g., bedroom_lights, kitchen_plug).
+#   friendly_name      : The human-readable device name (e.g., Bedroom Lights, Kitchen Plug).
+#   device_description : A description of the device (e.g., Magic Home Wifi RGB LED Controller).
 
 packages:
   - !include ha_api_secure.yaml
