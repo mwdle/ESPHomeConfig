@@ -265,9 +265,7 @@ void render_active_media() {
  * @param response The JsonObjectConst response from the Home Assistant action call.
  */
 void load_playlists_from_json(JsonObjectConst response) {
-    ESP_LOGI("playlist", "Loading playlists from JSON response");
     JsonArrayConst items = response["response"];
-    ESP_LOGI("playlist", "Found %d playlists", items.size());
     for (char* playlist : playlists->value()) {
         delete[] playlist;
     }
@@ -280,8 +278,6 @@ void load_playlists_from_json(JsonObjectConst response) {
             char* playlist = new char[length + 1];
             strcpy(playlist, name);
             playlists->value().push_back(playlist);
-            ESP_LOGD("playlist", "Added: %s", name);
         }
     }
-    ESP_LOGI("playlist", "Loaded %d playlists", playlists->value().size());
 }

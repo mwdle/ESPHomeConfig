@@ -118,8 +118,9 @@ display:
                 - lambda: "load_playlists_from_json(response);"
               on_error:
                 - logger.log:
-                    format: "ERROR: Failed to call music_assistant.get_library"
-                    level: ERROR
+                    format: "Failed to get playlists: %s"
+                    level: WARN
+                    args: ["error.c_str()"]
     pages:
       - id: playbackPage
         lambda: |-
