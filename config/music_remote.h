@@ -265,7 +265,7 @@ void render_active_media() {
  * @param response The JsonObjectConst response from the Home Assistant action call.
  */
 void load_playlists_from_json(JsonObjectConst response) {
-    if (!response.containsKey("items")) return;
+    if (!response["items"].is<JsonArrayConst>()) return;
     JsonArrayConst items = response["items"];
     if (items.isNull()) return;
     for (char* playlist : playlists->value()) {
@@ -274,7 +274,7 @@ void load_playlists_from_json(JsonObjectConst response) {
     playlists->value().clear();
     playlists->value().reserve(items.size());
     for (JsonObjectConst item : items) {
-        if (item.containsKey("name")) {
+        if (item["name"].is<const char*>()) {
             const char* name = item["name"].as<const char*>();
             if (name != nullptr) {
                 int length = strlen(name);
