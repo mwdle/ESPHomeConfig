@@ -266,9 +266,8 @@ void render_active_media() {
  */
 void load_playlists_from_json(JsonObjectConst response) {
     ESP_LOGI("playlist", "Loading playlists from JSON response");
-    JsonObjectConst actual_response = response["response"];
-    JsonArrayConst items = actual_response["items"];
-    ESP_LOGI("playlist", "Found %d items", items.size());
+    JsonArrayConst items = response["response"];
+    ESP_LOGI("playlist", "Found %d playlists", items.size());
     for (char* playlist : playlists->value()) {
         delete[] playlist;
     }

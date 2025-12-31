@@ -23,13 +23,13 @@ font:
       type: web
     id: opensans_12
     size: 12
-    glyphs: "@%’&!\"\\'()+,-_.:°/$#€£¥?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyzÀàÁáÃãçÈèÉéẼẽÌìÍíÑñôÒòÓóÕõØøŚśÙùÚúŨũ"
+    glyphs: "@%’&!¡\"\\'()+,-_.:°/$#€£¥?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyzÀàÁáÃãçÈèÉéẼẽÌìÍíÑñôÒòÓóÕõØøŚśÙùÚúŨũ"
   - file:
       url: "https://raw.githubusercontent.com/googlefonts/opensans/main/fonts/ttf/OpenSans-Regular.ttf"
       type: web
     id: opensans_10
     size: 10
-    glyphs: "@%’&!\"\\'()+,-_.:°/$#€£¥?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyzÀàÁáÃãçÈèÉéẼẽÌìÍíÑñôÒòÓóÕõØøŚśÙùÚúŨũ"
+    glyphs: "@%’&!¡\"\\'()+,-_.:°/$#€£¥?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyzÀàÁáÃãçÈèÉéẼẽÌìÍíÑñôÒòÓóÕõØøŚśÙùÚúŨũ"
   - file:
       url: "https://raw.githubusercontent.com/Templarian/MaterialDesign-Webfont/master/fonts/materialdesignicons-webfont.ttf"
       type: web
@@ -106,7 +106,6 @@ display:
     on_page_change:
       - to: playlistSelectionPage
         then:
-          - logger.log: "Page changed to playlistSelectionPage, fetching playlists..."
           - homeassistant.action:
               action: music_assistant.get_library
               data:
@@ -114,12 +113,12 @@ display:
               data_template:
                 config_entry_id: "{{ config_entry_id('media_player.audio') }}"
               capture_response: true
+              response_template: "{{ response['items'] | map(attribute='name') | list }}"
               on_success:
-                - logger.log: "Received response from music_assistant.get_library"
-                - lambda: load_playlists_from_json(response);
+                - lambda: "load_playlists_from_json(response);"
               on_error:
                 - logger.log:
-                    format: "Error calling music_assistant.get_library"
+                    format: "ERROR: Failed to call music_assistant.get_library"
                     level: ERROR
     pages:
       - id: playbackPage
