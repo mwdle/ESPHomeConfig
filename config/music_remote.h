@@ -265,9 +265,17 @@ void render_active_media() {
  * @param response The JsonObjectConst response from the Home Assistant action call.
  */
 void load_playlists_from_json(JsonObjectConst response) {
-    if (!response["items"].is<JsonArrayConst>()) return;
+    ESP_LOGI("playlist", "Loading playlists from JSON response");
+    if (!response["items"].is<JsonArrayConst>()) { 
+        ESP_LOGW("playlist", "No 'items' array found in response");
+        return;
+    }
     JsonArrayConst items = response["items"];
-    if (items.isNull()) return;
+    if (items.isNull()) {
+        ESP_LOGW("playlist", "Items array is null");
+        return;
+    }
+    ESP_LOGI("playlist", "Found %d items in response", items.size());
     for (char* playlist : playlists->value()) {
         delete[] playlist;
     }
@@ -281,7 +289,9 @@ void load_playlists_from_json(JsonObjectConst response) {
                 char* playlist = new char[length + 1];
                 strcpy(playlist, name);
                 playlists->value().push_back(playlist);
+                ESP_LOGD("playlist", "Added playlist: %s", name);
             }
         }
     }
+    ESP_LOGI("playlist", "Successfully loaded %d playlists", playlists->value().size());
 }
