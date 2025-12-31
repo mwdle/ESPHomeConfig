@@ -106,6 +106,7 @@ display:
     on_page_change:
       - to: playlistSelectionPage
         then:
+          - logger.log: "Page changed to playlistSelectionPage, fetching playlists..."
           - homeassistant.action:
               action: music_assistant.get_library
               data:
@@ -114,7 +115,12 @@ display:
                 config_entry_id: "{{ config_entry_id('media_player.audio') }}"
               capture_response: true
               on_success:
+                - logger.log: "Received response from music_assistant.get_library"
                 - lambda: load_playlists_from_json(response);
+              on_error:
+                - logger.log:
+                    format: "Error calling music_assistant.get_library"
+                    level: ERROR
     pages:
       - id: playbackPage
         lambda: |-
