@@ -115,7 +115,7 @@ display:
               capture_response: true
               response_template: "{{ response['items'] | map(attribute='name') | list }}"
               on_success:
-                - lambda: "load_playlists_from_json(response);"
+                - lambda: load_playlists_from_json(response);
               on_error:
                 - logger.log:
                     format: "Failed to get playlists: %s"

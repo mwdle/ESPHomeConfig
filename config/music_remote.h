@@ -271,13 +271,10 @@ void load_playlists_from_json(JsonObjectConst response) {
     }
     playlists->value().clear();
     playlists->value().reserve(items.size());
-    for (JsonObjectConst item : items) {
-        const char* name = item["name"].as<const char*>();
-        if (name != nullptr) {
-            int length = strlen(name);
-            char* playlist = new char[length + 1];
-            strcpy(playlist, name);
-            playlists->value().push_back(playlist);
-        }
+    for (const char* item : items) {
+        int length = strlen(item);
+        char* playlist = new char[length + 1];
+        strcpy(playlist, item);
+        playlists->value().push_back(playlist);
     }
 }
