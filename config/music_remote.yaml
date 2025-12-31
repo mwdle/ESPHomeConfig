@@ -101,8 +101,20 @@ display:
     model: "SSD1306 128x64"
     address: 0x3C
     rotation: 180°
-    contrast: 0% # Use the lowest "brightness" to save battery life (ESPHome brightness attribute doesn't work for SSD1306)
+    contrast: 0% # Use the lowest "brightness" to save battery life (ESPHome brightness attribute doesn't work for SSD1306, use contrast instead)
     update_interval: 42ms # ~24fps
+    on_page_change:
+      - to: playlistSelectionPage
+        then:
+          - homeassistant.action:
+              action: music_assistant.get_library
+              data:
+                media_type: playlist
+              data_template:
+                config_entry_id: "{{ config_entry_id('media_player.audio') }}"
+              capture_response: true
+              on_success:
+                - lambda: load_playlists_from_json(response);
     pages:
       - id: playbackPage
         lambda: |-
@@ -409,47 +421,3 @@ text_sensor:
     entity_id: media_player.audio_direct # Fetch the current media source directly from the Google Cast Integration provided player as it works regardless of media source.
     attribute: app_name
     internal: true
-  - platform: homeassistant
-    id: playlists_string
-    entity_id:
-      sensor.ma_library # This is a template sensor in HA that executes Music Assistant's "Get library items" action and stores the returned playlist names into a comma separated string as an attribute of the sensor.
-      # This is required for playlist selection because:
-      # 1. ESPHome doesn't support HA action response data
-      # 2. HA attributes have no character limit (as opposed to state which has a 255 character limit)
-
-      # See the Home Assistant template sensor YAML below:
-      # template:
-      #   - trigger:
-      #       - trigger: time_pattern
-      #         hours: 0 # Update the playlist list once daily
-      #       - platform: state
-      #         entity_id: input_button.manually_refresh_music_assistant_library # Trigger: Manual update using the input button
-      #     action:
-      #       - action: music_assistant.get_library
-      #         data:
-      #           media_type: playlist
-      #           config_entry_id: "{{ config_entry_id('media_player.audio') }}" # Run the action on the appropriate Music Assistant Integration Instance
-      #         response_variable: playlists_data
-      #     sensor:
-      #       - unique_id: ma_library
-      #         name: ma_library
-      #         state: "{{ now().isoformat() }}"
-      #         attributes:
-      #           playlist_count: "{{ playlists_data['items'] | length }}"
-      #           playlists: >
-      #             {% if playlists_data is defined and playlists_data['items'] %}
-      #               {% set ns = namespace(playlist_names="") %}
-      #               {% for playlist in playlists_data['items'] %}
-      #                 {% set ns.playlist_names = ns.playlist_names ~ playlist['name'] ~ ',' %}
-      #               {% endfor %}
-      #               {% if ns.playlist_names.endswith(',') %}
-      #                 {% set ns.playlist_names = ns.playlist_names[:-1] %}
-      #               {% endif %}
-      #               {{ ns.playlist_names }}
-      #             {% else %} No playlists available
-      #             {% endif %}
-    attribute: "playlists"
-    internal: true
-    on_value:
-      then:
-        - lambda: "load_playlist_sensor_data(x.c_str());"
