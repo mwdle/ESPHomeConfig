@@ -266,32 +266,23 @@ void render_active_media() {
  */
 void load_playlists_from_json(JsonObjectConst response) {
     ESP_LOGI("playlist", "Loading playlists from JSON response");
-    if (!response["items"].is<JsonArrayConst>()) { 
-        ESP_LOGW("playlist", "No 'items' array found in response");
-        return;
-    }
-    JsonArrayConst items = response["items"];
-    if (items.isNull()) {
-        ESP_LOGW("playlist", "Items array is null");
-        return;
-    }
-    ESP_LOGI("playlist", "Found %d items in response", items.size());
+    JsonObjectConst actual_response = response["response"];
+    JsonArrayConst items = actual_response["items"];
+    ESP_LOGI("playlist", "Found %d items", items.size());
     for (char* playlist : playlists->value()) {
         delete[] playlist;
     }
     playlists->value().clear();
     playlists->value().reserve(items.size());
     for (JsonObjectConst item : items) {
-        if (item["name"].is<const char*>()) {
-            const char* name = item["name"].as<const char*>();
-            if (name != nullptr) {
-                int length = strlen(name);
-                char* playlist = new char[length + 1];
-                strcpy(playlist, name);
-                playlists->value().push_back(playlist);
-                ESP_LOGD("playlist", "Added playlist: %s", name);
-            }
+        const char* name = item["name"].as<const char*>();
+        if (name != nullptr) {
+            int length = strlen(name);
+            char* playlist = new char[length + 1];
+            strcpy(playlist, name);
+            playlists->value().push_back(playlist);
+            ESP_LOGD("playlist", "Added: %s", name);
         }
     }
-    ESP_LOGI("playlist", "Successfully loaded %d playlists", playlists->value().size());
+    ESP_LOGI("playlist", "Loaded %d playlists", playlists->value().size());
 }
