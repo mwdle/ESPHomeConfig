@@ -5,9 +5,8 @@
  *
  * This file contains various functions to render and handle all display pages, including the music player, playlist selection, and statistics page. More pages may be implemented in the future.
  * The Music Player page displays the current track title and artist, scrolling them across the screen as needed (a 128x64 display is expected).
- * The playlist selection pages relies on a custom Home Assistant template sensor which allows you to pull playlist names from Music Assistant to show them on the display and allow selecting them for playback.
+ * The playlist selection page fetches playlist names from Music Assistant on-demand using ESPHome's native action response handling, allowing for viewing and selecting playlists for playback.
  * The statistics page shows information about wifi connectivity and signal, and Home Assistant API connectivity status.
- * This file also contains a function to load Music Assistant playlist names into a global vector of c strings using a custom Home Assistant template which allows for viewing and selecting any number of playlists from Music Assistant from within ESPHome.
  */
 
 const int SCREEN_WIDTH = 128;
@@ -261,36 +260,21 @@ void render_active_media() {
 }
 
 /**
- * Loads a string of playlist names separated by commas into the global vector of c string playlists.
- * @param playlistList A string of playlist names separated by commas.
+ * Loads playlist names from a JSON response into the global vector of c string playlists.
+ * Parses a JSON response containing an array of playlist names from the music_assistant.get_library action response template.
+ * @param response The JsonObjectConst response from the Home Assistant action call response template defined in music_remote.yaml.
  */
-void load_playlist_sensor_data(const char* playlistList) {
-    // Sets up the global vector of c string playlists
-    playlists->value().clear();
-    playlists->value().shrink_to_fit();
-
-    const char* start = playlistList; // Pointer to the start of the current token
-    const char* current = playlistList; // Pointer to traverse the string
-
-    while (*current != '\0') {
-        if (*current == ',') {
-            // Found a delimiter, process the current token
-            int tokenLength = (int)(current - start); // Determines the length of the string in bytes NOT including a null terminator
-            char* playlist = new char[tokenLength + 1]; // Accounts for the null terminator
-            playlist[tokenLength] = '\0';  // Null terminate the playlist string
-            std::strncpy(playlist, start, tokenLength);
-            playlists->value().push_back(playlist); // Add the playlist to the list
-            start = current + 1; // Update start to the character after the comma
-        }
-        current++; // Move to the next character
+void load_playlists_from_json(JsonObjectConst response) {
+    JsonArrayConst items = response["response"];
+    for (char* playlist : playlists->value()) {
+        delete[] playlist;
     }
-    
-    // Process the last token if it exists
-    if (start != current) {
-        int tokenLength = (int)(current - start); // Determines the length of the string in bytes NOT including the null terminator
-        char* playlist = new char[tokenLength + 1]; // Account for the null terminator
-        std::strncpy(playlist, start, tokenLength);
-        playlist[tokenLength] = '\0';  // Null terminate the playlist string
-        playlists->value().push_back(playlist); // Add the playlist to the list
+    playlists->value().clear();
+    playlists->value().reserve(items.size());
+    for (const char* item : items) {
+        int length = strlen(item);
+        char* playlist = new char[length + 1];
+        strcpy(playlist, item);
+        playlists->value().push_back(playlist);
     }
 }
