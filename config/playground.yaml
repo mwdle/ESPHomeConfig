@@ -14,9 +14,9 @@ sensor:
     icon: mdi:thermometer
     sensor: resistance_sensor
     calibration:
-      - 24kOhm -> 6.3°C
-      - 11.68kOhm -> 23.35°C
-      - 3.89kOhm -> 48.3°C
+      b_constant: 3950
+      reference_temperature: 25C
+      reference_resistance: 10kOhm
   - platform: resistance
     id: resistance_sensor
     sensor: source_thermistor_sensor
@@ -41,5 +41,6 @@ interval:
   - interval: 60s
     then:
       - switch.turn_on: thermistor_vcc
+      - delay: 50ms
       - component.update: source_thermistor_sensor
       - switch.turn_off: thermistor_vcc
