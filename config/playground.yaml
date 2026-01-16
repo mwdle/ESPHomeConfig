@@ -81,78 +81,99 @@ font:
 
 # 5. LVGL: The UI Manager
 lvgl:
+  buffer_size: 50%
   displays:
-    - display_id: my_hardware_display
-      buffer_size: 25% # bigger buffer = smoother animations
-
+    - my_hardware_display
   touchscreens:
-    - touchscreen_id: my_touch
-
-  log_idle_timeout: 60s
+    - my_touch
 
   on_idle:
-    - light.turn_off: disp_backlight
+    timeout: 60s
+    then:
+      - light.turn_off: disp_backlight
 
-  on_interaction:
-    - light.turn_on: disp_backlight
+  style_definitions:
+    # 1. Header Container
+    - id: style_header
+      bg_color: 0x2196F3
+      border_width: 0
+      radius: 0
+      height: 40
+      width: 100%
+      pad_all: 5
 
-  # THE UI LAYOUT
+    # 2. White Text
+    - id: style_text_white
+      text_color: 0xFFFFFF
+
+    # 3. Body Container
+    - id: style_body
+      width: 100%
+      height: 100%
+      border_width: 0
+      pad_top: 20
+      pad_row: 10
+
+    # 4. Centered Text
+    - id: style_text_center
+      text_align: CENTER
+
+    # 5. Button Container
+    - id: style_btn
+      bg_color: 0x4CAF50
+      width: 140
+      height: 60
+      radius: 10
+
+    # 6. Button Text
+    - id: style_btn_label
+      text_color: 0xFFFFFF
+      text_align: CENTER
+
   pages:
     - id: main_page
       widgets:
-        # --- HEADER BAR (Flex Layout) ---
+        # --- HEADER ---
         - obj:
-            height: 40
-            width: 100%
-            align: TOP_MID
-            style:
-              bg_color: 0x2196F3 # Blue
-              radius: 0
-              border_width: 0
+            id: header_bar
             layout:
               type: FLEX
               flex_flow: ROW
-              flex_align_main: SPACE_BETWEEN # Spreads items apart
-              pad_all: 5
+              flex_align_main: SPACE_BETWEEN
+            styles: style_header
+
             widgets:
-              # Left: Time
               - label:
                   text: "12:00 PM"
                   text_font: opensans_12
-                  text_color: 0xFFFFFF
-              # Right: WiFi Icon
+                  styles: style_text_white
               - label:
-                  text: "\U000F05A9" # Wifi Icon
+                  text: "󰖩"
                   text_font: mdi
-                  text_color: 0xFFFFFF
+                  styles: style_text_white
 
-        # --- BODY CONTENT ---
+        # --- BODY ---
         - obj:
-            align: CENTER
-            height: 150
-            width: 280
             layout:
               type: FLEX
               flex_flow: COLUMN
               flex_align_main: CENTER
-              flex_gap: 10
-            style:
-              border_width: 0
+            styles: style_body
+
             widgets:
               - label:
                   text: "Living Room"
                   text_font: opensans_12
-                  align: CENTER
+                  styles: style_text_center
 
               - button:
-                  height: 60
-                  width: 140
-                  align: CENTER
+                  id: toggle_btn
+                  styles: style_btn
                   on_click:
-                    - logger.log: "Light Toggled!"
-                    # - light.toggle: my_light
+                    - logger.log: "Button Clicked!"
+                    - light.toggle: disp_backlight
                   widgets:
                     - label:
-                        text: "\U000F0335 Toggle"
+                        text: "󰃟 Toggle"
                         text_font: mdi
-                        align: CENTER
+                        styles: style_btn_label
