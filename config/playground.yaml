@@ -34,7 +34,7 @@ display:
     model: ILI9341
     id: my_hardware_display
     cs_pin: GPIO15
-    dc_pin: GPIO2
+    dc_pin: GPIO17
     reset_pin: GPIO4
     rotation: 90 # Landscape mode (adjust to 0, 90, 180, 270)
     invert_colors: false
