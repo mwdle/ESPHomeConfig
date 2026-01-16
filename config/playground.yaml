@@ -59,9 +59,12 @@ touchscreen:
 
 # 4. Fonts: Define standard text and Icon font
 font:
-  - file: "fonts/roboto.ttf" # Or use a built-in one like gfonts
-    id: font_text
-    size: 20
+  - file:
+      url: "https://raw.githubusercontent.com/googlefonts/opensans/main/fonts/ttf/OpenSans-Regular.ttf"
+      type: web
+    id: opensans_12
+    size: 12
+    glyphs: "@%’&!¡\"\\'()+,-_.:°/$#€£¥?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyzÀàÁáÃãçÈèÉéẼẽÌìÍíÑñôÒòÓóÕõØøŚśÙùÚúŨũ"
 
   - file: "fonts/materialdesignicons-webfont.ttf"
     id: font_icon
@@ -81,6 +84,14 @@ lvgl:
 
   touchscreens:
     - touchscreen_id: my_touch
+
+  log_idle_timeout: 60s
+
+  on_idle:
+    - light.turn_off: disp_backlight
+
+  on_interaction:
+    - light.turn_on: disp_backlight
 
   # THE UI LAYOUT
   pages:
@@ -104,7 +115,7 @@ lvgl:
               # Left: Time
               - label:
                   text: "12:00 PM"
-                  text_font: font_text
+                  text_font: opensans_12
                   text_color: 0xFFFFFF
               # Right: WiFi Icon
               - label:
@@ -127,7 +138,7 @@ lvgl:
             widgets:
               - label:
                   text: "Living Room"
-                  text_font: font_text
+                  text_font: opensans_12
                   align: CENTER
 
               - button:
