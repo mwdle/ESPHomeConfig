@@ -37,6 +37,7 @@ display:
     dc_pin: GPIO2
     reset_pin: GPIO4
     rotation: 90 # Landscape mode (adjust to 0, 90, 180, 270)
+    invert_colors: false
     # Note: No lambda here! LVGL takes over.
 
 # 3. Configure the Touch Driver
