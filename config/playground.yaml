@@ -7,40 +7,137 @@ substitutions:
   friendly_name: ESP Playground
   device_description: ESP32 Testing Device and Playground
 
-sensor:
-  - platform: ntc
-    id: temperature_sensor
-    name: Thermistor
-    icon: mdi:thermometer
-    sensor: resistance_sensor
+output:
+  - platform: ledc
+    id: backlight_pwm
+    pin: GPIO21
+    frequency: 1000Hz
+
+# 2. Create a "Light" entity that controls that output
+light:
+  - platform: monochromatic
+    id: disp_backlight
+    name: "Display Brightness"
+    output: backlight_pwm
+    default_transition_length: 0s
+    restore_mode: ALWAYS_ON
+
+# 1. Setup the SPI Bus (Shared by Display and Touch)
+spi:
+  clk_pin: GPIO18
+  mosi_pin: GPIO23
+  miso_pin: GPIO19
+
+# 2. Configure the Hardware Display Driver
+display:
+  - platform: ili9xxx
+    model: ILI9341
+    id: my_hardware_display
+    cs_pin: GPIO15
+    dc_pin: GPIO2
+    reset_pin: GPIO4
+    rotation: 90 # Landscape mode (adjust to 0, 90, 180, 270)
+    # Note: No lambda here! LVGL takes over.
+
+# 3. Configure the Touch Driver
+touchscreen:
+  - platform: xpt2046
+    id: my_touch
+    cs_pin: GPIO5
+    interrupt_pin: GPIO22
+    update_interval: 50ms
+    # Calibration is often needed.
+    # Check logs for "x=..." when touching corners to tune these.
     calibration:
-      b_constant: 3950
-      reference_temperature: 25C
-      reference_resistance: 10kOhm
-  - platform: resistance
-    id: resistance_sensor
-    sensor: source_thermistor_sensor
-    configuration: DOWNSTREAM
-    reference_voltage: 3.3V
-    resistor: 10kOhm
-    name: Resistance Sensor
-  - platform: adc
-    id: source_thermistor_sensor
-    pin: GPIO32
-    attenuation: auto
-    update_interval: never
+      x_min: 200
+      x_max: 3800
+      y_min: 200
+      y_max: 3800
+    transform:
+      swap_xy: true # Often needed for 90deg rotation
 
-switch:
-  - platform: gpio
-    pin: GPIO23
-    id: thermistor_vcc
-    internal: true
+# 4. Fonts: Define standard text and Icon font
+font:
+  - file: "fonts/roboto.ttf" # Or use a built-in one like gfonts
+    id: font_text
+    size: 20
 
-# Update thermistor each minute. Thermistor is only powered while reading to prevent self heating.
-interval:
-  - interval: 60s
-    then:
-      - switch.turn_on: thermistor_vcc
-      - delay: 50ms
-      - component.update: source_thermistor_sensor
-      - switch.turn_off: thermistor_vcc
+  - file: "fonts/materialdesignicons-webfont.ttf"
+    id: font_icon
+    size: 24
+    # You MUST specify which icons to load to save memory
+    # Find unicodes at pictogrammers.com
+    glyphs:
+      - "\U000F05A9" # wifi
+      - "\U000F0150" # clock-outline
+      - "\U000F0335" # lightbulb
+
+# 5. LVGL: The UI Manager
+lvgl:
+  displays:
+    - display_id: my_hardware_display
+      buffer_size: 25% # bigger buffer = smoother animations
+
+  touchscreens:
+    - touchscreen_id: my_touch
+
+  # THE UI LAYOUT
+  pages:
+    - id: main_page
+      widgets:
+        # --- HEADER BAR (Flex Layout) ---
+        - obj:
+            height: 40
+            width: 100%
+            align: TOP_MID
+            style:
+              bg_color: 0x2196F3 # Blue
+              radius: 0
+              border_width: 0
+            layout:
+              type: FLEX
+              flex_flow: ROW
+              flex_align_main: SPACE_BETWEEN # Spreads items apart
+              pad_all: 5
+            widgets:
+              # Left: Time
+              - label:
+                  text: "12:00 PM"
+                  text_font: font_text
+                  text_color: 0xFFFFFF
+              # Right: WiFi Icon
+              - label:
+                  text: "\U000F05A9" # Wifi Icon
+                  text_font: font_icon
+                  text_color: 0xFFFFFF
+
+        # --- BODY CONTENT ---
+        - obj:
+            align: CENTER
+            height: 150
+            width: 280
+            layout:
+              type: FLEX
+              flex_flow: COLUMN
+              flex_align_main: CENTER
+              flex_gap: 10
+            style:
+              border_width: 0
+            widgets:
+              - label:
+                  text: "Living Room"
+                  text_font: font_text
+                  align: CENTER
+
+              - button:
+                  height: 60
+                  width: 140
+                  align: CENTER
+                  on_click:
+                    - logger.log: "Light Toggled!"
+                    # - light.toggle: my_light
+                  widgets:
+                    - label:
+                        text: "\U000F0335 Toggle"
+                        text_font: font_icon
+                        align: CENTER
