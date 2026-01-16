@@ -66,15 +66,18 @@ font:
     size: 12
     glyphs: "@%’&!¡\"\\'()+,-_.:°/$#€£¥?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyzÀàÁáÃãçÈèÉéẼẽÌìÍíÑñôÒòÓóÕõØøŚśÙùÚúŨũ"
 
-  - file: "fonts/materialdesignicons-webfont.ttf"
-    id: font_icon
+  - file:
+      url: "https://raw.githubusercontent.com/Templarian/MaterialDesign-Webfont/master/fonts/materialdesignicons-webfont.ttf"
+      type: web
+    id: mdi
     size: 24
-    # You MUST specify which icons to load to save memory
-    # Find unicodes at pictogrammers.com
-    glyphs:
-      - "\U000F05A9" # wifi
-      - "\U000F0150" # clock-outline
-      - "\U000F0335" # lightbulb
+    glyphs: [
+        "󰖩", # wifi
+        "󰖪", # wifi-off
+        "󰃟", # brightness-6
+        "󰀟", # cast-variant
+        "󰋼", # information
+      ]
 
 # 5. LVGL: The UI Manager
 lvgl:
@@ -120,7 +123,7 @@ lvgl:
               # Right: WiFi Icon
               - label:
                   text: "\U000F05A9" # Wifi Icon
-                  text_font: font_icon
+                  text_font: mdi
                   text_color: 0xFFFFFF
 
         # --- BODY CONTENT ---
@@ -151,5 +154,5 @@ lvgl:
                   widgets:
                     - label:
                         text: "\U000F0335 Toggle"
-                        text_font: font_icon
+                        text_font: mdi
                         align: CENTER
