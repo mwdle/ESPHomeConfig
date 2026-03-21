@@ -21,7 +21,7 @@
  */
 dockerComposePipeline(
     envFileCredentialIds: ["ESPHomeConfig.env"],
-    persistentWorkspace: "/home/mwdle/docker/deployments",
+    persistentWorkspace: "${env.DOCKER_VOLUMES}/deployments",
     postCheckoutSteps: {
         stage('Inject ESPHome Secrets') {
             withCredentials([file(credentialsId: 'secrets.yaml', variable: 'SECRETS_FILE')]) {
