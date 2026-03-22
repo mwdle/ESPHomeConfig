@@ -5,7 +5,7 @@ dockerComposePipeline(
     persistentWorkspace: "${env.DOCKER_VOLUMES}/deployments",
     postCheckoutSteps: {
         stage('Inject ESPHome Secrets') {
-            withCredentials([file(credentialsId: 'secrets.yaml', variable: 'SECRETS_FILE')]) {
+            withCredentials([file(credentialsId: 'ESPHome secrets.yaml', variable: 'SECRETS_FILE')]) {
                 sh '''
                     cp $SECRETS_FILE config/secrets.yaml
                     chmod 400 config/secrets.yaml
