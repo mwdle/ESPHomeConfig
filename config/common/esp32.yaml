@@ -6,11 +6,3 @@ esp32:
   board: esp32dev
   framework:
     type: esp-idf
-
-switch:
-  - platform: gpio
-    pin: GPIO2
-    name: Onboard LED
-    id: onboard_led
-    icon: mdi:led-on
-    restore_mode: DISABLED

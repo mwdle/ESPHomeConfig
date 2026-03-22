@@ -1,0 +1,46 @@
+packages:
+  - !include common/esp32.yaml
+  - !include common/components/webserver.yaml
+
+substitutions:
+  device_name: esp-playground
+  friendly_name: ESP Playground
+  device_description: ESP32 Testing Device and Playground
+
+sensor:
+  - platform: ntc
+    id: temperature_sensor
+    name: Thermistor
+    icon: mdi:thermometer
+    sensor: resistance_sensor
+    calibration:
+      b_constant: 3950
+      reference_temperature: 25C
+      reference_resistance: 10kOhm
+  - platform: resistance
+    id: resistance_sensor
+    sensor: source_thermistor_sensor
+    configuration: DOWNSTREAM
+    reference_voltage: 3.3V
+    resistor: 10kOhm
+    name: Resistance Sensor
+  - platform: adc
+    id: source_thermistor_sensor
+    pin: GPIO32
+    attenuation: auto
+    update_interval: never
+
+switch:
+  - platform: gpio
+    pin: GPIO23
+    id: thermistor_vcc
+    internal: true
+
+# Update thermistor each minute. Thermistor is only powered while reading to prevent self heating.
+interval:
+  - interval: 60s
+    then:
+      - switch.turn_on: thermistor_vcc
+      - delay: 50ms
+      - component.update: source_thermistor_sensor
+      - switch.turn_off: thermistor_vcc
