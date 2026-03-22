@@ -3,7 +3,7 @@ services:
   ESPHome:
     container_name: ESPHome
     hostname: esphome
-    image: ghcr.io/esphome/esphome
+    image: ghcr.io/esphome/esphome:2026.3.0
     restart: unless-stopped
     networks:
       AAA_LAN:
