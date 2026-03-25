@@ -1,6 +1,7 @@
 @Library("JenkinsPipelines") _ // See https://github.com/mwdle/JenkinsPipelines
 
 dockerComposePipeline(
+    disableConcurrentBuilds: true,
     envFileCredentialIds: ["ESPHomeConfig.env"],
     persistentWorkspace: "${env.DOCKER_VOLUMES}/deployments",
     postCheckoutSteps: {
