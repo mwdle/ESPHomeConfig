@@ -16,6 +16,10 @@ services:
     environment:
       - TZ=${TZ}
 
+    user: "${UID}:${GID}"
+    security_opt:
+      - no-new-privileges:true
+
 networks:
   ESPHome:
     external: true
