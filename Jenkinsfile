@@ -7,7 +7,7 @@ boolean disableIndexTriggers = !isMainBranch
 dockerComposePipeline(
     disableIndexTriggers: disableIndexTriggers,
     disableConcurrentBuilds: true,
-    envFileCredentialIds: ["ESPHomeConfig.env"],
+    envFileCredentialIds: ["common.env", "ESPHomeConfig.env"],
     persistentWorkspace: "${env.DOCKER_VOLUMES}/deployments",
     postCheckoutSteps: {
         stage('Inject ESPHome Secrets') {
