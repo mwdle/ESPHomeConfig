@@ -25,6 +25,13 @@ services:
     logging:
       driver: "journald"
 
+    deploy:
+      resources:
+        limits:
+          cpus: 3
+          memory: 2GB
+          pids: 100
+
 networks:
   ESPHome:
     external: true
