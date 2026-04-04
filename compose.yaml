@@ -15,10 +15,15 @@ services:
       - /etc/localtime:/etc/localtime:ro
     environment:
       - TZ=${TZ}
+      - PLATFORMIO_CORE_DIR=.plattformio
+      - PLATFORMIO_GLOBALLIB_DIR=.plattformioLibs
 
     user: "${UID}:${GID}"
     security_opt:
       - no-new-privileges:true
+
+    logging:
+      driver: "journald"
 
 networks:
   ESPHome:
