@@ -19,6 +19,7 @@ services:
       - PLATFORMIO_GLOBALLIB_DIR=.plattformioLibs
 
     user: "${UID}:${GID}"
+    read_only: true
     security_opt:
       - no-new-privileges:true
 
