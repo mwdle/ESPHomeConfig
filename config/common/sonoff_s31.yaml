@@ -4,6 +4,10 @@ packages:
 substitutions:
   device_description: Sonoff S31 Smart Plug
 
+logger:
+  logs:
+    cse7766: INFO
+
 uart:
   rx_pin: RX
   baud_rate: 4800
