@@ -54,6 +54,9 @@ sensor:
       name: Power Factor
       accuracy_decimals: 2
       filters:
+        - clamp:
+            min_value: 0.0
+            max_value: 1.0
         - throttle_average: 60s
   - platform: total_daily_energy #(Optional, not specific to cse7766)
     name: Daily Energy
