@@ -32,7 +32,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 3
+          cpus: 5
           memory: 2GB
           pids: 100
 
