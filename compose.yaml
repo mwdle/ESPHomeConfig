@@ -7,7 +7,6 @@ services:
     restart: unless-stopped
     networks:
       AAA_LAN:
-        mac_address: 0A:00:00:00:00:03 # Set static LAN MAC address for container (e.g. MAC address used in `AAA_LAN` MacVLAN network persists between container stops/starts)
       ESPHome:
     volumes:
       - ./config:/config
