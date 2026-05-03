@@ -7,8 +7,8 @@ substitutions:
   device_description: ESP8266-Based Remote for Music Assistant
   # Both of the following media_player entities refer to the same physical media player, but behave differently because they are provided by different integrations in Home Assistant.
   # Both are necessary to ensure that all media playback controls can function properly regardless of the current media source (e.g. Music Assistant, Spotify, Poweramp, etc).
-  media_player_mass: media_player.audio # Music Assistant integration provided media_player entity
-  media_player_direct: media_player.audio_direct # Google Cast integration provided media_player entity
+  media_player_mass: media_player.michael_s_speakers # Music Assistant integration provided media_player entity
+  media_player_direct: media_player.michael_s_speakers_direct # Google Cast integration provided media_player entity
 
 esphome:
   # This configuration requires the music_remote.h file which contains implementation for all display rendering, playlist management, and more.
