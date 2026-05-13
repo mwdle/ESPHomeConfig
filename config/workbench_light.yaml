@@ -1,0 +1,6 @@
+packages:
+  - !include common/gosund_wp3.yaml
+
+substitutions:
+  device_name: workbench-light
+  friendly_name: Workbench Light
