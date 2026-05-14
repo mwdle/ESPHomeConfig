@@ -2,5 +2,5 @@ packages:
   - !include common/magichome_rgb_led_controller.yaml
 
 substitutions:
-  device_name: shelf-lights
-  friendly_name: Shelf Lights
+  device_name: monitor-lights
+  friendly_name: Monitor Lights
