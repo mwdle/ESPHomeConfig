@@ -14,7 +14,7 @@ dockerComposePipeline(
             withCredentials([file(credentialsId: 'ESPHome secrets.yaml', variable: 'SECRETS_FILE')]) {
                 sh '''
                     cp "$SECRETS_FILE" config/secrets.yaml
-                    chmod 400 config/secrets.yaml
+                    chmod 600 config/secrets.yaml
                 '''
             }
         }
