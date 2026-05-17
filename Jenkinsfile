@@ -6,7 +6,6 @@ boolean disableIndexTriggers = !isMainBranch
 
 dockerComposePipeline(
     disableIndexTriggers: disableIndexTriggers,
-    disableConcurrentBuilds: true,
     defaultComposeBuild: true,
     envFileCredentialIds: ["common.env", "ESPHomeConfig.env"],
     persistentWorkspace: "${env.DOCKER_VOLUMES}/deployments",
