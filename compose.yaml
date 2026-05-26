@@ -6,7 +6,8 @@ services:
     image: ghcr.io/esphome/esphome:2026.5.0@sha256:8c101495f4764a8943c7f5a7a16a5a41f1e3c3e2192cc7f54305ce4511b557d5
     restart: unless-stopped
     networks:
-      AAA_LAN:
+      LAN:
+        gw_priority: 1
       ESPHome:
     volumes:
       - ./config:/config
@@ -38,7 +39,7 @@ services:
 networks:
   ESPHome:
     external: true
-  AAA_LAN:
+  LAN:
     external: true
 
 volumes:
