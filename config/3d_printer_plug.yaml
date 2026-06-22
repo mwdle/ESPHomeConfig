@@ -1,0 +1,6 @@
+packages:
+  - !include common/sonoff_s31.yaml
+
+substitutions:
+  device_name: 3d-printer
+  friendly_name: 3D Printer
