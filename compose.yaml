@@ -9,6 +9,7 @@ services:
       ESPHome:
       LAN:
         gw_priority: 1
+        ipv4_address: 10.0.11.13
     volumes:
       - ./config:/config
       - esphome_build:/config/.esphome # Put build directory outside of the project folder
