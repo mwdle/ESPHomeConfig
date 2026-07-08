@@ -1,4 +1,5 @@
 ota:
   - platform: esphome
     id: device_ota
+    port: 8266
     password: !secret otapass
