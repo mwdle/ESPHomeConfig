@@ -1,6 +1,5 @@
 packages:
   - !include components/base.yaml
-  - !include components/esp_wifi_min_auth.yaml
 
 esp8266:
   board: nodemcuv2
