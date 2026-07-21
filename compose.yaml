@@ -3,7 +3,7 @@ services:
   ESPHome:
     container_name: ESPHome
     hostname: esphome
-    image: ghcr.io/esphome/esphome:2026.6.5@sha256:ffe23402d169fc9b8ff29fc3c9fc13b3c47e8a53726fce4569e2280bd534c84c
+    image: ghcr.io/esphome/esphome:2026.7.1@sha256:b4ac9ddc2fc702e629540baac62df0ac5912fc11e90c1b267337c6413d03243c
     restart: unless-stopped
     networks:
       ESPHome:
