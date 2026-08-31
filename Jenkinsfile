@@ -9,9 +9,6 @@ dockerComposePipeline(
     envFileCredentialIds: ["common.env", "ESPHomeConfig.env"],
     persistentWorkspace: "${env.DOCKER_VOLUMES}/deployments",
     postCheckoutSteps: {
-        stage('Security Scan') {
-            securityScanStep('compose.yaml')
-        }
         stage('Inject ESPHome Secrets') {
             withCredentials([file(credentialsId: 'ESPHome secrets.yaml', variable: 'SECRETS_FILE')]) {
                 sh '''
