@@ -21,6 +21,8 @@ services:
       # https://github.com/esphome/issues/issues/3558
       - PLATFORMIO_CORE_DIR=.plattformio
       - PLATFORMIO_GLOBALLIB_DIR=.plattformioLibs
+      # read_only container fix for ESPHome 2026.8.0+
+      - CCACHE_DIR=/config/.esphome/ccache
 
     user: "${UID}:${GID}"
     read_only: true
