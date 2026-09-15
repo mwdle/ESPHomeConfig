@@ -30,15 +30,13 @@ spi:
 
 # 2. Configure the Hardware Display Driver
 display:
-  - platform: ili9xxx
+  - platform: mipi_spi
     model: ILI9341
     id: my_hardware_display
     cs_pin: GPIO15
     dc_pin: GPIO17
     reset_pin: GPIO4
-    rotation: 90 # Landscape mode (adjust to 0, 90, 180, 270)
     invert_colors: false
-    # Note: No lambda here! LVGL takes over.
 
 # 3. Configure the Touch Driver
 touchscreen:
@@ -82,6 +80,7 @@ font:
 # 5. LVGL: The UI Manager
 lvgl:
   buffer_size: 50%
+  rotation: 90°
   displays:
     - my_hardware_display
   touchscreens:
